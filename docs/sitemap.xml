@@ -38,6 +38,20 @@
   </url>
   
   <url>
+    <loc>https://lixiang233.github.io/tags/schedule/</loc>
+    <lastmod>2020-04-27T15:23:43+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/</loc>
+    <lastmod>2020-04-27T15:23:43+08:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
     <loc>https://lixiang233.github.io/about/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>schedule on Li Xiang Blogging</title>
+    <link>https://lixiang233.github.io/tags/schedule/</link>
+    <description>Recent content in schedule on Li Xiang Blogging</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 Apr 2020 15:23:43 +0800</lastBuildDate>
+    
+	<atom:link href="https://lixiang233.github.io/tags/schedule/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Scheduling Queue</title>
+      <link>https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/</link>
+      <pubDate>Mon, 27 Apr 2020 15:23:43 +0800</pubDate>
+      
+      <guid>https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/</guid>
+      <description>简介：  activeQ  数据结构 堆的实现 lessFunc初始化：   podBackoffQ  数据结构   unschedulableQ  数据结构     运行原理  pod流向   Contact Me   简介： Scheduling-queue是scheduler存储待调度Pod的队列，1.18版本scheduling-queue为PriorityQueue，结构如下：
+type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial backoff duration.  podInitialBackoffDuration time.Duration // pod maximum backoff duration.  podMaxBackoffDuration time.Duration lock sync.RWMutex cond sync.Cond // activeQ is heap structure that scheduler actively looks at to find pods to  // schedule.</description>
+    </item>
+    
+  </channel>
+</rss>

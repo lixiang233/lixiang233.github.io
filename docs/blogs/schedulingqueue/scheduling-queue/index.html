@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Scheduling Queue | Li Xiang Blogging</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.74.3" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.4fc0b62e4b82c997bb0041217cd6b979.css" rel="stylesheet">
+    
+
+    
+
+    
+      
+
+    
+
+    
+    
+    <meta property="og:title" content="Scheduling Queue" />
+<meta property="og:description" content="简介：  activeQ  数据结构 堆的实现 lessFunc初始化：   podBackoffQ  数据结构   unschedulableQ  数据结构     运行原理  pod流向   Contact Me   简介： Scheduling-queue是scheduler存储待调度Pod的队列，1.18版本scheduling-queue为PriorityQueue，结构如下：
+type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial backoff duration.  podInitialBackoffDuration time.Duration // pod maximum backoff duration.  podMaxBackoffDuration time.Duration lock sync.RWMutex cond sync.Cond // activeQ is heap structure that scheduler actively looks at to find pods to  // schedule." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/" />
+<meta property="article:published_time" content="2020-04-27T15:23:43+08:00" />
+<meta property="article:modified_time" content="2020-04-27T15:23:43+08:00" />
+<meta itemprop="name" content="Scheduling Queue">
+<meta itemprop="description" content="简介：  activeQ  数据结构 堆的实现 lessFunc初始化：   podBackoffQ  数据结构   unschedulableQ  数据结构     运行原理  pod流向   Contact Me   简介： Scheduling-queue是scheduler存储待调度Pod的队列，1.18版本scheduling-queue为PriorityQueue，结构如下：
+type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial backoff duration.  podInitialBackoffDuration time.Duration // pod maximum backoff duration.  podMaxBackoffDuration time.Duration lock sync.RWMutex cond sync.Cond // activeQ is heap structure that scheduler actively looks at to find pods to  // schedule.">
+<meta itemprop="datePublished" content="2020-04-27T15:23:43+08:00" />
+<meta itemprop="dateModified" content="2020-04-27T15:23:43+08:00" />
+<meta itemprop="wordCount" content="694">
+
+
+
+<meta itemprop="keywords" content="schedule," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Scheduling Queue"/>
+<meta name="twitter:description" content="简介：  activeQ  数据结构 堆的实现 lessFunc初始化：   podBackoffQ  数据结构   unschedulableQ  数据结构     运行原理  pod流向   Contact Me   简介： Scheduling-queue是scheduler存储待调度Pod的队列，1.18版本scheduling-queue为PriorityQueue，结构如下：
+type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial backoff duration.  podInitialBackoffDuration time.Duration // pod maximum backoff duration.  podMaxBackoffDuration time.Duration lock sync.RWMutex cond sync.Cond // activeQ is heap structure that scheduler actively looks at to find pods to  // schedule."/>
+
+	
+
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        Li Xiang Blogging
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/blogs/" title="Articles page">
+              Articles
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/contact/" title="Contact page">
+              Contact
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked">
+          
+        ARTICLES
+      </aside>
+      
+
+
+
+
+  <div id="sharing" class="mt3">
+
+    
+    <a href="https://www.facebook.com/sharer.php?u=https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/" class="facebook no-underline" aria-label="share on Facebook">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
+
+    </a>
+
+    
+    
+    <a href="https://twitter.com/share?url=https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/&amp;text=Scheduling%20Queue" class="twitter no-underline" aria-label="share on Twitter">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+    </a>
+
+    
+    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/&amp;title=Scheduling%20Queue" class="linkedin no-underline" aria-label="share on LinkedIn">
+      <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+
+    </a>
+  </div>
+
+
+      <h1 class="f1 athelas mt3 mb1">Scheduling Queue</h1>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2020-04-27T15:23:43+08:00">April 27, 2020</time>
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><!-- raw HTML omitted -->
+<ul>
+<li><a href="#%E7%AE%80%E4%BB%8B">简介：</a>
+<ul>
+<li><a href="#activeq">activeQ</a>
+<ul>
+<li><a href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">数据结构</a></li>
+<li><a href="#%E5%A0%86%E7%9A%84%E5%AE%9E%E7%8E%B0">堆的实现</a></li>
+<li><a href="#lessfunc%E5%88%9D%E5%A7%8B%E5%8C%96">lessFunc初始化：</a></li>
+</ul>
+</li>
+<li><a href="#podbackoffq">podBackoffQ</a>
+<ul>
+<li><a href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">数据结构</a></li>
+</ul>
+</li>
+<li><a href="#unschedulableq">unschedulableQ</a>
+<ul>
+<li><a href="#%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">数据结构</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86">运行原理</a>
+<ul>
+<li><a href="#pod%E6%B5%81%E5%90%91">pod流向</a></li>
+</ul>
+</li>
+<li><a href="#contact-me">Contact Me</a></li>
+</ul>
+<!-- raw HTML omitted -->
+<hr>
+<h1 id="简介">简介：</h1>
+<p>Scheduling-queue是scheduler存储待调度Pod的队列，1.18版本scheduling-queue为PriorityQueue，结构如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">PriorityQueue</span> <span style="color:#66d9ef">struct</span> {
+        <span style="color:#a6e22e">stop</span>  <span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">struct</span>{}
+        <span style="color:#a6e22e">clock</span> <span style="color:#a6e22e">util</span>.<span style="color:#a6e22e">Clock</span>
+        <span style="color:#75715e">// pod initial backoff duration.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">podInitialBackoffDuration</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Duration</span>
+        <span style="color:#75715e">// pod maximum backoff duration.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">podMaxBackoffDuration</span> <span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Duration</span>
+
+        <span style="color:#a6e22e">lock</span> <span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">RWMutex</span>
+
+        <span style="color:#a6e22e">cond</span> <span style="color:#a6e22e">sync</span>.<span style="color:#a6e22e">Cond</span>
+
+        <span style="color:#75715e">// activeQ is heap structure that scheduler actively looks at to find pods to
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// schedule. Head of heap is the highest priority pod.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">activeQ</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">heap</span>.<span style="color:#a6e22e">Heap</span>   <span style="color:#a6e22e">存放待调度的Pod</span><span style="color:#960050;background-color:#1e0010">，</span><span style="color:#a6e22e">每次调度从中pop一个pod出来</span>
+
+        <span style="color:#75715e">// podBackoffQ is a heap ordered by backoff expiry. Pods which have completed backoff
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// are popped from this heap before the scheduler looks at activeQ
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">podBackoffQ</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">heap</span>.<span style="color:#a6e22e">Heap</span>  <span style="color:#a6e22e">存放backoff状态的pod</span>
+
+        <span style="color:#75715e">// unschedulableQ holds pods that have been tried and determined unschedulable.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">unschedulableQ</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">UnschedulablePodsMap</span>  <span style="color:#a6e22e">存放Unschedulable状态的</span><span style="color:#f92672">**</span><span style="color:#a6e22e">pod</span>
+
+        <span style="color:#75715e">// nominatedPods is a structures that stores pods which are nominated to run
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// on nodes.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">nominatedPods</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">nominatedPodMap</span>
+
+        <span style="color:#75715e">// schedulingCycle represents sequence number of scheduling cycle and is incremented
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// when a pod is popped.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">schedulingCycle</span> <span style="color:#66d9ef">int64</span>   <span style="color:#a6e22e">递增的序列</span><span style="color:#960050;background-color:#1e0010">，</span><span style="color:#a6e22e">类似ETCD的Index</span><span style="color:#960050;background-color:#1e0010">，</span><span style="color:#a6e22e">每次pop</span> <span style="color:#a6e22e">pod时增加</span>
+
+        <span style="color:#75715e">// moveRequestCycle caches the sequence number of scheduling cycle when we
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// received a move request. Unscheduable pods in and before this scheduling
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// cycle will be put back to activeQueue if we were trying to schedule them
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// when we received move request.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">moveRequestCycle</span> <span style="color:#66d9ef">int64</span>  <span style="color:#a6e22e">记录上一次移动unschedulableQ的pod到podBackoffQ的序列</span>
+
+        <span style="color:#75715e">// closed indicates that the queue is closed.
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// It is mainly used to let Pop() exit its control loop while waiting for an item.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">closed</span> <span style="color:#66d9ef">bool</span>
+}
+</code></pre></div><h2 id="activeq">activeQ</h2>
+<h3 id="数据结构">数据结构</h3>
+<p><strong>activeQ</strong>是PriorityQueue实现pod排序、存储的结构，activeQ是一个Heap，里面按照优先级顺序存放了待调度的pod，Heap的所有功能是由data结构实现的。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Heap is a producer/consumer queue that implements a heap data structure.
+</span><span style="color:#75715e">// It can be used to implement priority queues and similar data structures.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Heap</span> <span style="color:#66d9ef">struct</span> {
+        <span style="color:#75715e">// data stores objects and has a queue that keeps their ordering according
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// to the heap invariant.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">data</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">data</span>
+
+        <span style="color:#75715e">// metricRecorder updates the counter when elements of a heap get added or
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// removed, and it does nothing if it&#39;s nil
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">metricRecorder</span> <span style="color:#a6e22e">metrics</span>.<span style="color:#a6e22e">MetricRecorder</span>
+}
+</code></pre></div><h3 id="堆的实现">堆的实现</h3>
+<p>Heap的data实现了golang里面的堆接口。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">data</span> <span style="color:#66d9ef">struct</span> {
+        <span style="color:#75715e">// items is a map from key of the objects to the objects and their index.
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// We depend on the property that items in the map are in the queue and vice versa.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">items</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">heapItem</span>
+
+        <span style="color:#75715e">// queue implements a heap data structure and keeps the order of elements
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// according to the heap invariant. The queue keeps the keys of objects stored
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// in &#34;items&#34;.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">queue</span> []<span style="color:#66d9ef">string</span>
+
+        <span style="color:#75715e">// keyFunc is used to make the key used for queued item insertion and retrieval, and
+</span><span style="color:#75715e"></span>        <span style="color:#75715e">// should be deterministic.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">keyFunc</span> <span style="color:#a6e22e">KeyFunc</span>
+
+        <span style="color:#75715e">// lessFunc is used to compare two objects in the heap.
+</span><span style="color:#75715e"></span>        <span style="color:#a6e22e">lessFunc</span> <span style="color:#a6e22e">lessFunc</span>
+}
+</code></pre></div><ul>
+<li><strong>item</strong>是存放了所有的pod信息的map，key是keyFunc通过pod信息生成的string，value是pod信息。</li>
+<li><strong>queue</strong>是一个堆，里面按顺序存放了所有pod的key。优先级越高的pod在queue中的index越小，Pod加入堆的优先级比较由lessFunc实现。</li>
+<li><strong>keyFunc</strong>用于生成pod的key。</li>
+<li><strong>lessFunc</strong>用于比较两个pod的优先级，在pod加入时使用，入参是两个pod信息，当第一个pod在queue中的位置比第二个靠前时返回true。
+(activQ的lessFunc可以通过QueueSort插件来自定义。)</li>
+</ul>
+<h3 id="lessfunc初始化">lessFunc初始化：</h3>
+<p>初始化时，activeQ的lessFunc使用的是第一个scheduler的第一个QueueSort插件，也就是说所有的scheduler都使用同一种QueueSort插件，
+多个QueueSort插件配置了也只有第一个生效(一个scheduler进程只有一个scheduling-queue，所以只能有一个QueueSort插件)。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Profiles are required to have equivalent queue sort plugins.
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">lessFn</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">profiles</span>[<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">profiles</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">SchedulerName</span>].<span style="color:#a6e22e">QueueSortFunc</span>()
+<span style="color:#a6e22e">podQueue</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">internalqueue</span>.<span style="color:#a6e22e">NewSchedulingQueue</span>(
+	<span style="color:#a6e22e">lessFn</span>,
+	<span style="color:#a6e22e">internalqueue</span>.<span style="color:#a6e22e">WithPodInitialBackoffDuration</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Duration</span>(<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">podInitialBackoffSeconds</span>)<span style="color:#f92672">*</span><span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>),
+	<span style="color:#a6e22e">internalqueue</span>.<span style="color:#a6e22e">WithPodMaxBackoffDuration</span>(<span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Duration</span>(<span style="color:#a6e22e">c</span>.<span style="color:#a6e22e">podMaxBackoffSeconds</span>)<span style="color:#f92672">*</span><span style="color:#a6e22e">time</span>.<span style="color:#a6e22e">Second</span>),
+	<span style="color:#a6e22e">internalqueue</span>.<span style="color:#a6e22e">WithPodNominator</span>(<span style="color:#a6e22e">nominator</span>),
+)
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// QueueSortFunc returns the function to sort pods in scheduling queue
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">f</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">frameworkImpl</span>) <span style="color:#a6e22e">QueueSortFunc</span>() <span style="color:#a6e22e">framework</span>.<span style="color:#a6e22e">LessFunc</span> {
+	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">f</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">nil</span> {
+		<span style="color:#75715e">// If frameworkImpl is nil, simply keep their order unchanged.
+</span><span style="color:#75715e"></span>		<span style="color:#75715e">// NOTE: this is primarily for tests.
+</span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">func</span>(<span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">_</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">framework</span>.<span style="color:#a6e22e">QueuedPodInfo</span>) <span style="color:#66d9ef">bool</span> { <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span> }
+	}
+
+	<span style="color:#66d9ef">if</span> len(<span style="color:#a6e22e">f</span>.<span style="color:#a6e22e">queueSortPlugins</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> {
+		panic(<span style="color:#e6db74">&#34;No QueueSort plugin is registered in the frameworkImpl.&#34;</span>)
+	}
+
+	<span style="color:#75715e">// Only one QueueSort plugin can be enabled.
+</span><span style="color:#75715e"></span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">f</span>.<span style="color:#a6e22e">queueSortPlugins</span>[<span style="color:#ae81ff">0</span>].<span style="color:#a6e22e">Less</span>
+}
+</code></pre></div><p>默认QueueSort插件的lessFunc：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Less is the function used by the activeQ heap algorithm to sort pods.
+</span><span style="color:#75715e">// It sorts pods based on their priority. When priorities are equal, it uses
+</span><span style="color:#75715e">// PodQueueInfo.timestamp.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">pl</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">PrioritySort</span>) <span style="color:#a6e22e">Less</span>(<span style="color:#a6e22e">pInfo1</span>, <span style="color:#a6e22e">pInfo2</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">framework</span>.<span style="color:#a6e22e">QueuedPodInfo</span>) <span style="color:#66d9ef">bool</span> {
+	<span style="color:#a6e22e">p1</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">corev1helpers</span>.<span style="color:#a6e22e">PodPriority</span>(<span style="color:#a6e22e">pInfo1</span>.<span style="color:#a6e22e">Pod</span>)
+	<span style="color:#a6e22e">p2</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">corev1helpers</span>.<span style="color:#a6e22e">PodPriority</span>(<span style="color:#a6e22e">pInfo2</span>.<span style="color:#a6e22e">Pod</span>)
+	<span style="color:#66d9ef">return</span> (<span style="color:#a6e22e">p1</span> &gt; <span style="color:#a6e22e">p2</span>) <span style="color:#f92672">||</span> (<span style="color:#a6e22e">p1</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">p2</span> <span style="color:#f92672">&amp;&amp;</span> <span style="color:#a6e22e">pInfo1</span>.<span style="color:#a6e22e">Timestamp</span>.<span style="color:#a6e22e">Before</span>(<span style="color:#a6e22e">pInfo2</span>.<span style="color:#a6e22e">Timestamp</span>))
+}
+</code></pre></div><p>通过比较pod的Spec.Priority来判断优先级，如果pod该字段为空，则默认为0。Priority相同的两个pod，则先加入scheduling-queue的pod优先级高(即FIFO)</p>
+<h2 id="podbackoffq">podBackoffQ</h2>
+<h3 id="数据结构-1">数据结构</h3>
+<p><em><strong>podBackoffQ</strong></em>是PriorityQueue实现调度失败pod的backoff机制的队列，pod的backoff时间是 <code>2^Pod尝试调度次数</code> 秒(最多为10秒)，从pod上次加入scheduling-queue的时间开始计算，按照pod backoff到期时间顺序排序，先到期的pod排在前面，podBackoffQ的数据结构与activeQ相同，都是一个Heap，lessFunc如下：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">p</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">PriorityQueue</span>) <span style="color:#a6e22e">podsCompareBackoffCompleted</span>(<span style="color:#a6e22e">podInfo1</span>, <span style="color:#a6e22e">podInfo2</span> <span style="color:#66d9ef">interface</span>{}) <span style="color:#66d9ef">bool</span> {
+	<span style="color:#a6e22e">pInfo1</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">podInfo1</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">framework</span>.<span style="color:#a6e22e">QueuedPodInfo</span>)
+	<span style="color:#a6e22e">pInfo2</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">podInfo2</span>.(<span style="color:#f92672">*</span><span style="color:#a6e22e">framework</span>.<span style="color:#a6e22e">QueuedPodInfo</span>)
+	<span style="color:#a6e22e">bo1</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">p</span>.<span style="color:#a6e22e">getBackoffTime</span>(<span style="color:#a6e22e">pInfo1</span>)
+	<span style="color:#a6e22e">bo2</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">p</span>.<span style="color:#a6e22e">getBackoffTime</span>(<span style="color:#a6e22e">pInfo2</span>)
+	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">bo1</span>.<span style="color:#a6e22e">Before</span>(<span style="color:#a6e22e">bo2</span>)
+}
+</code></pre></div><p>backoff时间先到的pod优先级高。</p>
+<h2 id="unschedulableq">unschedulableQ</h2>
+<h3 id="数据结构-2">数据结构</h3>
+<p><em><strong>unschedulableQ</strong></em>是一个UnschedulablePodsMap</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">UnschedulablePodsMap</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#75715e">// podInfoMap is a map key by a pod&#39;s full-name and the value is a pointer to the QueuedPodInfo.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">podInfoMap</span> <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">framework</span>.<span style="color:#a6e22e">QueuedPodInfo</span>
+	<span style="color:#a6e22e">keyFunc</span>    <span style="color:#66d9ef">func</span>(<span style="color:#f92672">*</span><span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">Pod</span>) <span style="color:#66d9ef">string</span>
+	<span style="color:#75715e">// metricRecorder updates the counter when elements of an unschedulablePodsMap
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// get added or removed, and it does nothing if it&#39;s nil
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">metricRecorder</span> <span style="color:#a6e22e">metrics</span>.<span style="color:#a6e22e">MetricRecorder</span>
+}
+</code></pre></div><p><em><strong>unschedulableQ</strong></em>用于PriorityQueue存储调度失败的Pod，当收到集群变化的特定事件或距离pod上次调度已经过了60秒时(每30s轮询一次)，会触发将unschedulableQ中的Pod放入podBackoffQ(backoff时间未到)或activeQ(已经过了pod的backoff时间)的move操作。</p>
+<h1 id="运行原理">运行原理</h1>
+<h2 id="pod流向">pod流向</h2>
+<p><img src="/images/blogs/schedulingqueue/schedulingqueue-01.JPG" alt="img"></p>
+<p>上图是一个pod在PriorityQueue中的流向，图中每一步分别为：</p>
+<ol>
+<li>Informer watch到Pod的Add，调用PriorityQueue的Add将Pod加入activQ中</li>
+<li>Scheduler调度完一个pod后，通过NextPodFunc从activQ中Pop一个pod进行调度</li>
+<li>Scheduler调度Pod失败，记录当前的schedulingCycle，根据情况对Pod处理：
+<ol>
+<li>记录的schedulingCycle &lt;= moveRequestCycle，说明在Pod调度失败后进行了把pod从unschedulableQ移出的move操作，直接将Pod加入到podBackoffQ</li>
+<li>记录的schedulingCycle &gt; moveRequestCycle，说明调度失败后未发生过move操作，将Pod加入unschedulableQ</li>
+</ol>
+</li>
+<li>当Pod在unschedulableQ中存放时间超过60秒(每30秒检查一次)或有特定事件(pod bound、Node add、pod delete、CSINode add、Pv add、PvcAdd、Service、StorageClass等相关事件)时，会触发一次unschedulableQ的move，对unschedulableQ中的所有pod进行：
+<ol>
+<li>pod的backoff时间已过，将pod加入activQ</li>
+<li>pod的backoff时间未到，将pod加入podBackoffQ</li>
+</ol>
+</li>
+<li>当Pod的backoff时间到期时，会将Pod从podBackoffQ取出加入activQ(每秒检查一次)</li>
+</ol>
+<hr>
+<h1 id="contact-me">Contact Me</h1>
+
+
+
+<form class="black-80 sans-serif" accept-charset="UTF-8" action="https://formspree.io/xaypvadb" method="POST" role="form">
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray"  for="name">Your Name</label>
+    <input type="text" id="name" name="name" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="name"/>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="email">Email Address</label>
+    <input type="email" id="email" name="email" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="email"/>
+    <div class="requirements f6 gray glow i ph3 overflow-hidden">
+      An email address is required.
+    </div>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="message">Message</label>
+    <textarea id="message" name="message" class="w-100 f5 pv3 ph3 bg-light-gray bn h4" aria-labelledby="message"></textarea>
+
+    <input class="db w-100 mv2 white pa3 bn hover-shadow hover-bg-black bg-animate bg-black" type="submit" value="Send" />
+
+</form>
+
+<ul class="pa0">
+  
+   <li class="list">
+     <a href="/tags/schedule" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">schedule</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://lixiang233.github.io" >
+    &copy;  Li Xiang Blogging 2021 
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+  </body>
+</html>
