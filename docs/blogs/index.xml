@@ -1,32 +1,23 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Articles on lixiang</title>
+    <title>Articles on Li Xiang Blogging</title>
     <link>https://lixiang233.github.io/blogs/</link>
-    <description>Recent content in Articles on lixiang</description>
+    <description>Recent content in Articles on Li Xiang Blogging</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 05 Aug 2020 09:51:31 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 19 May 2020 15:42:17 +0800</lastBuildDate>
     
 	<atom:link href="https://lixiang233.github.io/blogs/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Hello World</title>
-      <link>https://lixiang233.github.io/blogs/helloworld/</link>
-      <pubDate>Wed, 05 Aug 2020 09:51:31 +0800</pubDate>
-      
-      <guid>https://lixiang233.github.io/blogs/helloworld/</guid>
-      <description>First of all </description>
-    </item>
-    
-    <item>
       <title>ClientSet和Informer</title>
-      <link>https://lixiang233.github.io/blogs/clientset/</link>
+      <link>https://lixiang233.github.io/blogs/clientset/clientset/</link>
       <pubDate>Tue, 19 May 2020 15:42:17 +0800</pubDate>
       
-      <guid>https://lixiang233.github.io/blogs/clientset/</guid>
-      <description>ClientSet ClientSet是一个Client的集合，支持对所有的Api-server资源的(Create/Update/Delete/Get/List/Watch)等操作，ClientSet的每一次请求都是直接对ApiServer的一次调用，有以下Client：
+      <guid>https://lixiang233.github.io/blogs/clientset/clientset/</guid>
+      <description>ClientSet和Informer简介 目录  ClientSet Informer 使用场景  ClientSet ClientSet是一个Client的集合，支持对所有的Api-server资源的(Create/Update/Delete/Get/List/Watch)等操作，ClientSet的每一次请求都是直接对ApiServer的一次调用，有以下Client：
 每个Client支持对一种ApiVersion下的资源进行相应操作，如Pod的操作在CoreV1这个client中：
 支持对Pod进行以下操作：
 使用ClientSet进行watch时，会返回一个ResultChan和Stop func，需要自己实现从ResultChan中取出watch的对象处理，调用Stop func可以停止watch。

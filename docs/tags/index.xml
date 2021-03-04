@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Tags on lixiang</title>
+    <title>Tags on Li Xiang Blogging</title>
     <link>https://lixiang233.github.io/tags/</link>
-    <description>Recent content in Tags on lixiang</description>
+    <description>Recent content in Tags on Li Xiang Blogging</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 05 Aug 2020 09:51:31 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 19 May 2020 15:42:17 +0800</lastBuildDate>
     
 	<atom:link href="https://lixiang233.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>hello</title>
-      <link>https://lixiang233.github.io/tags/hello/</link>
-      <pubDate>Wed, 05 Aug 2020 09:51:31 +0800</pubDate>
-      
-      <guid>https://lixiang233.github.io/tags/hello/</guid>
-      <description></description>
-    </item>
     
     <item>
       <title>client-go</title>
