@@ -17,16 +17,7 @@
       <pubDate>Tue, 19 May 2020 15:42:17 +0800</pubDate>
       
       <guid>https://lixiang233.github.io/blogs/clientset/clientset/</guid>
-      <description> ClientSet Informer 使用场景 Contact Me   ClientSet ClientSet是一个Client的集合，支持对所有的Api-server资源的(Create/Update/Delete/Get/List/Watch)等操作，ClientSet的每一次请求都是直接对ApiServer的一次调用，有以下Client：
-每个Client支持对一种ApiVersion下的资源进行相应操作，如Pod的操作在CoreV1这个client中：
-支持对Pod进行以下操作：
-使用ClientSet进行watch时，会返回一个ResultChan和Stop func，需要自己实现从ResultChan中取出watch的对象处理，调用Stop func可以停止watch。
-Informer Informer是用来对ApiServer资源的查询(Get/List/Watch)操作，Informer会对ApiServer进行list/watch，并将结果缓存到内存中，可以通过调用Lister的Get/List对资源进行查询，调用Get/List实际上是查询Informer缓存的内容(避免频繁访问ApiServer)，注意查询返回的Pod是只读的，修改前需要DeepCopy。和ClientSet不同，informer是针对某一种具体的资源单独的，比如对Pod的为 PodInformer：
-Informer启动时，可以向Informer注册处理资源Add/Update/Del事件的Handler，在有对应事件时，Informer会自动调用注册的func，而不需要使用者自行处理。
-Informer结构：
-由Lister提供访问对cache的查询，Informer实现watch到事件调用Handler
-使用场景 当需要对某个资源进行频繁查询或watch时，推荐使用Informer；当需要对多个资源低频率查询或需要对资源进行除查询以外的其他操作时，推荐使用ClientSet。
- Contact Me Your Name Email Address An email address is required.  Message   </description>
+      <description>&lt;p&gt;简要介绍client-go中的clientset/informer区别以及用法&lt;/p&gt;</description>
     </item>
     
   </channel>

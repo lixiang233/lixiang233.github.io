@@ -17,8 +17,7 @@
       <pubDate>Mon, 27 Apr 2020 15:23:43 +0800</pubDate>
       
       <guid>https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/</guid>
-      <description>简介：  activeQ  数据结构 堆的实现 lessFunc初始化：   podBackoffQ  数据结构   unschedulableQ  数据结构     运行原理  pod流向   Contact Me   简介： Scheduling-queue是scheduler存储待调度Pod的队列，1.18版本scheduling-queue为PriorityQueue，结构如下：
-type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial backoff duration.  podInitialBackoffDuration time.Duration // pod maximum backoff duration.  podMaxBackoffDuration time.Duration lock sync.RWMutex cond sync.Cond // activeQ is heap structure that scheduler actively looks at to find pods to  // schedule.</description>
+      <description>&lt;p&gt;scheduling-queue介绍，以及scheduling-queue运行原理剖析&lt;/p&gt;</description>
     </item>
     
   </channel>

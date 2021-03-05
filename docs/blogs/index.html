@@ -32,15 +32,15 @@
     
     
     <meta property="og:title" content="Articles" />
-<meta property="og:description" content="All here" />
+<meta property="og:description" content="kind /bug" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://lixiang233.github.io/blogs/" />
 <meta property="og:updated_time" content="2020-05-19T15:42:17+08:00" />
 <meta itemprop="name" content="Articles">
-<meta itemprop="description" content="All here">
+<meta itemprop="description" content="kind /bug">
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Articles"/>
-<meta name="twitter:description" content="All here"/>
+<meta name="twitter:description" content="kind /bug"/>
 
 	
 
@@ -110,6 +110,16 @@ if (!doNotTrack) {
 
 
 
+<a href="https://github.com/lixiang233" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
 
 
 
@@ -125,10 +135,6 @@ if (!doNotTrack) {
         <h1 class="f2 f-subheadline-l fw2 white-90 mb0 lh-title">
           Articles
         </h1>
-        
-          <h2 class="fw1 f5 f3-l white-80 measure-wide-l center mt3">
-            All here
-          </h2>
         
       </div>
     </div>
@@ -150,16 +156,7 @@ if (!doNotTrack) {
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-       ClientSet Informer 使用场景 Contact Me   ClientSet ClientSet是一个Client的集合，支持对所有的Api-server资源的(Create/Update/Delete/Get/List/Watch)等操作，ClientSet的每一次请求都是直接对ApiServer的一次调用，有以下Client：
-每个Client支持对一种ApiVersion下的资源进行相应操作，如Pod的操作在CoreV1这个client中：
-支持对Pod进行以下操作：
-使用ClientSet进行watch时，会返回一个ResultChan和Stop func，需要自己实现从ResultChan中取出watch的对象处理，调用Stop func可以停止watch。
-Informer Informer是用来对ApiServer资源的查询(Get/List/Watch)操作，Informer会对ApiServer进行list/watch，并将结果缓存到内存中，可以通过调用Lister的Get/List对资源进行查询，调用Get/List实际上是查询Informer缓存的内容(避免频繁访问ApiServer)，注意查询返回的Pod是只读的，修改前需要DeepCopy。和ClientSet不同，informer是针对某一种具体的资源单独的，比如对Pod的为 PodInformer：
-Informer启动时，可以向Informer注册处理资源Add/Update/Del事件的Handler，在有对应事件时，Informer会自动调用注册的func，而不需要使用者自行处理。
-Informer结构：
-由Lister提供访问对cache的查询，Informer实现watch到事件调用Handler
-使用场景 当需要对某个资源进行频繁查询或watch时，推荐使用Informer；当需要对多个资源低频率查询或需要对资源进行除查询以外的其他操作时，推荐使用ClientSet。
- Contact Me Your Name Email Address An email address is required.  Message   
+      <p>简要介绍client-go中的clientset/informer区别以及用法</p>
     </div>
   </div>
 </div>
@@ -174,8 +171,7 @@ Informer结构：
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      简介：  activeQ  数据结构 堆的实现 lessFunc初始化：   podBackoffQ  数据结构   unschedulableQ  数据结构     运行原理  pod流向   Contact Me   简介： Scheduling-queue是scheduler存储待调度Pod的队列，1.18版本scheduling-queue为PriorityQueue，结构如下：
-type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial backoff duration.  podInitialBackoffDuration time.Duration // pod maximum backoff duration.  podMaxBackoffDuration time.Duration lock sync.RWMutex cond sync.Cond // activeQ is heap structure that scheduler actively looks at to find pods to  // schedule.
+      <p>scheduling-queue介绍，以及scheduling-queue运行原理剖析</p>
     </div>
   </div>
 </div>
@@ -190,8 +186,7 @@ type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial b
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置 实现方式 部署方式   GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
- InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes.
+      <p>社区event-exporter项目简介</p>
     </div>
   </div>
 </div>
@@ -215,6 +210,16 @@ type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial b
 
 
 
+
+<a href="https://github.com/lixiang233" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
 
 
 
