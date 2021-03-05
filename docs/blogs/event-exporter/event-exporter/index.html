@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Event Exporter | Li Xiang Blogging</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.74.3" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.4fc0b62e4b82c997bb0041217cd6b979.css" rel="stylesheet">
+    
+
+    
+
+    
+      
+
+    
+
+    
+    
+    <meta property="og:title" content="Event Exporter" />
+<meta property="og:description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置     See below for configuring the receivers - 实现方式 - 部署方式  GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
+ InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lixiang233.github.io/blogs/event-exporter/event-exporter/" />
+<meta property="article:published_time" content="2020-04-01T11:31:18+08:00" />
+<meta property="article:modified_time" content="2020-04-01T11:31:18+08:00" />
+<meta itemprop="name" content="Event Exporter">
+<meta itemprop="description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置     See below for configuring the receivers - 实现方式 - 部署方式  GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
+ InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes.">
+<meta itemprop="datePublished" content="2020-04-01T11:31:18+08:00" />
+<meta itemprop="dateModified" content="2020-04-01T11:31:18+08:00" />
+<meta itemprop="wordCount" content="370">
+
+
+
+<meta itemprop="keywords" content="events,exporter," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Event Exporter"/>
+<meta name="twitter:description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置     See below for configuring the receivers - 实现方式 - 部署方式  GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
+ InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes."/>
+
+	
+
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        Li Xiang Blogging
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/blogs/" title="Articles page">
+              Articles
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/contact/" title="Contact page">
+              Contact
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked">
+          
+        ARTICLES
+      </aside>
+      
+
+
+
+
+  <div id="sharing" class="mt3">
+
+    
+    <a href="https://www.facebook.com/sharer.php?u=https://lixiang233.github.io/blogs/event-exporter/event-exporter/" class="facebook no-underline" aria-label="share on Facebook">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
+
+    </a>
+
+    
+    
+    <a href="https://twitter.com/share?url=https://lixiang233.github.io/blogs/event-exporter/event-exporter/&amp;text=Event%20Exporter" class="twitter no-underline" aria-label="share on Twitter">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+    </a>
+
+    
+    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://lixiang233.github.io/blogs/event-exporter/event-exporter/&amp;title=Event%20Exporter" class="linkedin no-underline" aria-label="share on LinkedIn">
+      <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+
+    </a>
+  </div>
+
+
+      <h1 class="f1 athelas mt3 mb1">Event Exporter</h1>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2020-04-01T11:31:18+08:00">April 1, 2020</time>
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><!-- raw HTML omitted -->
+<ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">基本概念</a>
+<ul>
+<li><a href="#event">Event</a></li>
+<li><a href="#event-exporter">event-exporter</a></li>
+</ul>
+</li>
+<li><a href="#%E7%A4%BE%E5%8C%BAevent-exporter%E7%9B%B8%E5%85%B3%E9%A1%B9%E7%9B%AE">社区event-exporter相关项目</a>
+<ul>
+<li><a href="#caicloudevent-exporter">caicloud/event-exporter</a>
+<ul>
+<li><a href="#event%E8%8E%B7%E5%8F%96%E6%96%B9%E5%BC%8F">event获取方式</a></li>
+<li><a href="#event%E6%9A%B4%E9%9C%B2%E6%96%B9%E5%BC%8F">event暴露方式</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F">实现方式</a></li>
+<li><a href="#%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F">部署方式</a></li>
+</ul>
+</li>
+<li><a href="#opsgeniekubernetes-event-exporter">opsgenie/kubernetes-event-exporter</a>
+<ul>
+<li><a href="#event%E8%8E%B7%E5%8F%96%E6%96%B9%E5%BC%8F">event获取方式</a></li>
+<li><a href="#event%E6%9A%B4%E9%9C%B2%E6%96%B9%E5%BC%8F">event暴露方式</a></li>
+<li><a href="#%E6%8E%A8%E9%80%81%E8%A7%84%E5%88%99%E5%8F%8Areceiver%E9%85%8D%E7%BD%AE">推送规则及receiver配置</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#see-below-for-configuring-the-receivers">See below for configuring the receivers</a>
+- <a href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F">实现方式</a>
+- <a href="#%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F">部署方式</a>
+<ul>
+<li><a href="#googlecloudplatformk8s-stackdriverevent-exporter">GoogleCloudPlatform/k8s-stackdriver/event-exporter</a>
+<ul>
+<li><a href="#event%E8%8E%B7%E5%8F%96%E6%96%B9%E5%BC%8F">event获取方式</a></li>
+<li><a href="#event%E6%9A%B4%E9%9C%B2%E6%96%B9%E5%BC%8F">event暴露方式</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F">实现方式</a></li>
+<li><a href="#%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F">部署方式</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#contact-me">Contact Me</a></li>
+</ul>
+<!-- raw HTML omitted -->
+<hr>
+<h1 id="基本概念">基本概念</h1>
+<h2 id="event">Event</h2>
+<p>Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：</p>
+<ul>
+<li><strong>InvolvedObject</strong> event所属的对象，如Pod、Node等。</li>
+<li><strong>Reason</strong> 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。</li>
+<li><strong>Message</strong> 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。</li>
+<li><strong>Source</strong>  上报event的组件，如：systemd-monitor、kubelet等。</li>
+<li><strong>FirstTimestamp</strong> 首次记录该event时间。</li>
+<li><strong>LastTimestamp</strong> 最近一次记录该event时间。</li>
+<li><strong>Count</strong> event出现的次数。</li>
+<li><strong>Type</strong> event的类型，当前只有Normal和Warning两种。</li>
+<li>EventTime         event首次被发现的时间。一般不填，为空。</li>
+<li>Action            记录对event所属对象进行了什么操作，或什么操作失败了。</li>
+<li>Related           可选的辅助对象，用于更复杂的操作。</li>
+<li>ReportingController 发出该event的controller。如：kubernetes.io/kubelet</li>
+<li>ReportingInstance controller实例的ID。如：kubelet-xyzf</li>
+</ul>
+<p>一个event的示例：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">apiVersion</span>: v1
+<span style="color:#66d9ef">items</span>:
+- <span style="color:#66d9ef">apiVersion</span>: v1
+  <span style="color:#66d9ef">count</span>: <span style="color:#ae81ff">16</span>
+  <span style="color:#66d9ef">eventTime</span>: <span style="color:#66d9ef">null</span>
+  <span style="color:#66d9ef">firstTimestamp</span>: <span style="color:#e6db74">&#34;2021-03-04T19:21:46Z&#34;</span>
+  <span style="color:#66d9ef">involvedObject</span>:
+    <span style="color:#66d9ef">apiVersion</span>: v1
+    <span style="color:#66d9ef">fieldPath</span>: spec.containers{busybox}
+    <span style="color:#66d9ef">kind</span>: Pod
+    <span style="color:#66d9ef">name</span>: busybox-deployment-59846fc57b-46kfr
+    <span style="color:#66d9ef">namespace</span>: default
+    <span style="color:#66d9ef">resourceVersion</span>: <span style="color:#e6db74">&#34;1238418&#34;</span>
+    <span style="color:#66d9ef">uid</span>: f65cea22<span style="color:#ae81ff">-6292-4311</span>-a69b-c9607357f37a
+  <span style="color:#66d9ef">kind</span>: Event
+  <span style="color:#66d9ef">lastTimestamp</span>: <span style="color:#e6db74">&#34;2021-03-05T10:23:31Z&#34;</span>
+  <span style="color:#66d9ef">message</span>: Container image <span style="color:#e6db74">&#34;busybox&#34;</span> already present on machine
+  <span style="color:#66d9ef">metadata</span>:
+    <span style="color:#66d9ef">creationTimestamp</span>: <span style="color:#e6db74">&#34;2021-03-04T20:21:52Z&#34;</span>
+    <span style="color:#66d9ef">name</span>: busybox-deployment-59846fc57b-46kfr.166939fe7bb55c7d
+    <span style="color:#66d9ef">namespace</span>: default
+    <span style="color:#66d9ef">resourceVersion</span>: <span style="color:#e6db74">&#34;1344204&#34;</span>
+    <span style="color:#66d9ef">uid</span>: 4ba6d58a<span style="color:#ae81ff">-1801-4291</span>-80cf-0e940329cdda
+  <span style="color:#66d9ef">reason</span>: Pulled
+  <span style="color:#66d9ef">reportingComponent</span>: <span style="color:#e6db74">&#34;&#34;</span>
+  <span style="color:#66d9ef">reportingInstance</span>: <span style="color:#e6db74">&#34;&#34;</span>
+  <span style="color:#66d9ef">source</span>:
+    <span style="color:#66d9ef">component</span>: kubelet
+    <span style="color:#66d9ef">host</span>: XXXX
+  <span style="color:#66d9ef">type</span>: Normal
+</code></pre></div><h2 id="event-exporter">event-exporter</h2>
+<p>event-exporter主要用来解决event无法永久记录、某些监控组件无法直接采集/过滤k8s集群的event的问题。通过list-watch集群的event，将event按自定义的规则过滤筛选后通过写入日志文件、暴露Prometheus metrics接口、上传到Kafka等方式暴露出去。</p>
+<h1 id="社区event-exporter相关项目">社区event-exporter相关项目</h1>
+<h2 id="caicloudevent-exporter">caicloud/event-exporter</h2>
+<p><a href="https://github.com/caicloud/event_exporter">项目地址</a></p>
+<h3 id="event获取方式">event获取方式</h3>
+<p>通过使用client-go的informer工具，对event对象进行list-watch。watch到的对象存入eventStore中。</p>
+<h3 id="event暴露方式">event暴露方式</h3>
+<p>通过Prometheus的metrics接口暴露，Prometheus主动调用接口采集指标时，将event填入kubernetes_events这个指标中，将&quot;event_namespace&rdquo;, &ldquo;event_name&rdquo;, &ldquo;event_kind(InvolvedObject.Kind)&rdquo;, &ldquo;event_reason&rdquo;, &ldquo;event_type&rdquo;, &ldquo;event_subobject(InvolvedObject.FieldPath)&rdquo;, &ldquo;event_message&rdquo;, &ldquo;event_source&quot;填入指标的label中，指标值为该event是否近期发生(isHappening)，判断条件是event更新的时间距离指标采集时间是否小于配置的backoff时长。</p>
+<h3 id="实现方式">实现方式</h3>
+<p>event-exporter主要功能通过一个EventStore实例实现，EventStore里主要包含了访问api-server的配置、存储event的cache(client-go里的informer提供)、存储event的时间信息(event上次更新时间点、event的backoff时长配置)的backoffEntry cache、event失效时间配置(默认300秒)、event默认backoff时间配置(默认20秒)。</p>
+<p>启动时申请一个watch对象为event的informer，注册定义好的AddFunc和UpdateFunc，在有新的event时，informer会自动将该event加入eventStore，并调用AddFunc。AddFunc将event加入backoffEntry cache中，如果该event不在backoffEntry cache中(通过event的name和namespace组成的id判断)或距该event上次更新已经过了失效时间，则为该event新生成一个backoffEntry；否则更新该event的backoffEntry的backoff时间配置为之前的两倍(最大为失效时间)。</p>
+<p>当metrics接口被调用获取指标时，会遍历所有的backoffEntry中的信息，根据id从eventStore中取出event，将event信息填入metrics中，遍历完成后调用backoffEntry的GC，将已经失效的event从backoffEntry中删除(GC并不会对eventStore进行操作)。</p>
+<p><img src="/images/blogs/event-exporter/eventexporter-01.jpg" alt="img"></p>
+<h3 id="部署方式">部署方式</h3>
+<p>单副本deployment。</p>
+<h2 id="opsgeniekubernetes-event-exporter">opsgenie/kubernetes-event-exporter</h2>
+<p><a href="https://github.com/opsgenie/kubernetes-event-exporter">项目地址</a></p>
+<h3 id="event获取方式-1">event获取方式</h3>
+<p>通过使用client-go的event informer，对event进行list-watch，通过注册OnAdd和OnUpdate方法实现event的新增、更新的响应。</p>
+<h3 id="event暴露方式-1">event暴露方式</h3>
+<p>主动推送的方式，可以配置多个receiver以及对应的推送规则。会将event以json的形式发送给receiver。支持的receiver有：Opsgenie、<strong>Webhooks/HTTP</strong>、Elasticsearch、Slack、Kinesis、SNS、SQS、<strong>files</strong>、<strong>Kafka</strong>、Customizing Payload。</p>
+<h3 id="推送规则及receiver配置">推送规则及receiver配置</h3>
+<ul>
+<li>规则配置：</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">route</span>:
+  <span style="color:#75715e"># Main route</span>
+  <span style="color:#66d9ef">routes</span>:
+    <span style="color:#75715e"># This route allows dumping all events because it has no fields to match and no drop rules.</span>
+    - <span style="color:#66d9ef">match</span>:
+      - <span style="color:#66d9ef">receiver</span>: dump
+    <span style="color:#75715e"># This starts another route, drops all the events in *test* namespaces and Normal events</span>
+    <span style="color:#75715e"># for capturing critical events</span>
+    - <span style="color:#66d9ef">drop</span>:
+      - <span style="color:#66d9ef">namespace</span>: <span style="color:#e6db74">&#34;*test*&#34;</span>
+      - <span style="color:#66d9ef">type</span>: <span style="color:#e6db74">&#34;Normal&#34;</span>
+      <span style="color:#66d9ef">match</span>:
+      - <span style="color:#66d9ef">receiver</span>: <span style="color:#e6db74">&#34;critical-events-queue&#34;</span>
+    <span style="color:#75715e"># This a final route for user messages</span>
+    - <span style="color:#66d9ef">match</span>:
+        <span style="color:#66d9ef">kind</span>: <span style="color:#e6db74">&#34;Pod|Deployment|ReplicaSet&#34;</span>
+        <span style="color:#66d9ef">labels</span>:
+          <span style="color:#66d9ef">version</span>: <span style="color:#e6db74">&#34;dev&#34;</span>
+        <span style="color:#66d9ef">receiver</span>: <span style="color:#e6db74">&#34;slack&#34;</span>
+<span style="color:#66d9ef">receivers</span>:
+<span style="color:#75715e"># See below for configuring the receivers</span>
+</code></pre></div><p>规则分为match和drop规则，每个规则可以匹配以下属性：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Rule</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">Labels</span>     <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">Message</span>    <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">APIVersion</span> <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">Kind</span>       <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">Namespace</span>  <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">Reason</span>     <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">Type</span>       <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">MinCount</span>   <span style="color:#66d9ef">int32</span>
+	<span style="color:#a6e22e">Component</span>  <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">Host</span>       <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">Receiver</span>   <span style="color:#66d9ef">string</span>
+}
+</code></pre></div><p>部分规则配置示例:</p>
+<ul>
+<li>HTTP receiver配置：</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">receivers</span>:
+  - <span style="color:#66d9ef">name</span>: <span style="color:#e6db74">&#34;alerts&#34;</span>
+    <span style="color:#66d9ef">webhook</span>:
+      <span style="color:#66d9ef">endpoint</span>: <span style="color:#e6db74">&#34;https://my-super-secret-service.com&#34;</span>
+      <span style="color:#66d9ef">headers</span>:
+        <span style="color:#66d9ef">X-API-KEY</span>: <span style="color:#e6db74">&#34;123&#34;</span>
+        <span style="color:#66d9ef">User-Agent</span>: kube-event-exporter <span style="color:#ae81ff">1.0</span>
+      <span style="color:#66d9ef">layout</span>: <span style="color:#75715e"># Optional</span>
+</code></pre></div><ul>
+<li>File receiver配置：</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">receivers</span>:
+  - <span style="color:#66d9ef">name</span>: <span style="color:#e6db74">&#34;file&#34;</span>
+    <span style="color:#66d9ef">file</span>:
+      <span style="color:#66d9ef">path</span>: <span style="color:#e6db74">&#34;/tmp/dump&#34;</span>
+      <span style="color:#66d9ef">layout</span>: <span style="color:#75715e"># Optional</span>
+</code></pre></div><ul>
+<li>Kafka receiver配置：</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">receivers</span>:
+  - <span style="color:#66d9ef">name</span>: <span style="color:#e6db74">&#34;kafka&#34;</span>
+    <span style="color:#66d9ef">kafka</span>:
+      <span style="color:#66d9ef">topic</span>: <span style="color:#e6db74">&#34;kube-event&#34;</span>
+      <span style="color:#66d9ef">brokers</span>:
+        - <span style="color:#e6db74">&#34;localhost:9092&#34;</span>
+      <span style="color:#66d9ef">tls</span>:
+        <span style="color:#66d9ef">enable</span>: <span style="color:#66d9ef">false</span>
+        <span style="color:#66d9ef">certFile</span>: <span style="color:#e6db74">&#34;kafka-client.crt&#34;</span>
+        <span style="color:#66d9ef">keyFile</span>: <span style="color:#e6db74">&#34;kafka-client.key&#34;</span>
+        <span style="color:#66d9ef">caFile</span>: <span style="color:#e6db74">&#34;kafka-ca.crt&#34;</span>
+</code></pre></div><h3 id="实现方式-1">实现方式</h3>
+<p>event-exporter主要功能通过Engine实现，Engine中实现了规则的解析存储、匹配、receiver配置、push event。启动时根据配置的规则和receiver生成新的Engine，Engine中会为每个receiver申请一个channel，用于event的传递。将engine的OnEvent方法注册到event的informer中，当有新的event时，会调用OnEvent，当event匹配到规则时，将event放入规则的receiver的channel中，event会被push到对应的receiver。</p>
+<p><img src="/images/blogs/event-exporter/eventexporter-02.jpg" alt="img"></p>
+<h3 id="部署方式-1">部署方式</h3>
+<p>单副本deployment</p>
+<h2 id="googlecloudplatformk8s-stackdriverevent-exporter">GoogleCloudPlatform/k8s-stackdriver/event-exporter</h2>
+<p><a href="https://github.com/GoogleCloudPlatform/k8s-stackdriver/tree/master/event-exporter">项目地址</a></p>
+<h3 id="event获取方式-2">event获取方式</h3>
+<p>通过使用client-go的reflector对event进行list-watch。注册OnList、OnAdd、OnUpdate方法实现event的新增、更新的响应。</p>
+<h3 id="event暴露方式-2">event暴露方式</h3>
+<p>主动推送的方式，只支持stackdriver，watch到event后，会将event处理并加入cache，当cache达到一定量或者到一定时间后，会将cache中的数据推送到配置好的stackdriver。</p>
+<h3 id="实现方式-2">实现方式</h3>
+<p>主要功能通过eventExporter实现，里面包含负责推送的sink和负责watch的watcher，sink实现了OnList、On Add、OnUpdate方法注册到watcher中，watch到event后，将event处理成需要的格式放入sink的cache中，当cache达到一定数量(默认100条)或过了一段时间没有推送(默认5秒)，会把cache中的event推送到stackdriver并清空cache。推送是在goroutine中完成，默认最多允许10个协程同时跑。</p>
+<p><img src="/images/blogs/event-exporter/eventexporter-03.jpg" alt="img"></p>
+<h3 id="部署方式-2">部署方式</h3>
+<p>单副本deployment</p>
+<hr>
+<h1 id="contact-me">Contact Me</h1>
+
+
+
+<form class="black-80 sans-serif" accept-charset="UTF-8" action="https://formspree.io/xaypvadb" method="POST" role="form">
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray"  for="name">Your Name</label>
+    <input type="text" id="name" name="name" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="name"/>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="email">Email Address</label>
+    <input type="email" id="email" name="email" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="email"/>
+    <div class="requirements f6 gray glow i ph3 overflow-hidden">
+      An email address is required.
+    </div>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="message">Message</label>
+    <textarea id="message" name="message" class="w-100 f5 pv3 ph3 bg-light-gray bn h4" aria-labelledby="message"></textarea>
+
+    <input class="db w-100 mv2 white pa3 bn hover-shadow hover-bg-black bg-animate bg-black" type="submit" value="Send" />
+
+</form>
+
+<ul class="pa0">
+  
+   <li class="list">
+     <a href="/tags/events" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">events</a>
+   </li>
+  
+   <li class="list">
+     <a href="/tags/exporter" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">exporter</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://lixiang233.github.io" >
+    &copy;  Li Xiang Blogging 2021 
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+  </body>
+</html>
