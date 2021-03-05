@@ -27,25 +27,25 @@
     
     
     <meta property="og:title" content="Event Exporter" />
-<meta property="og:description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置     See below for configuring the receivers - 实现方式 - 部署方式  GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
+<meta property="og:description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置 实现方式 部署方式   GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
  InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://lixiang233.github.io/blogs/event-exporter/event-exporter/" />
 <meta property="article:published_time" content="2020-04-01T11:31:18+08:00" />
 <meta property="article:modified_time" content="2020-04-01T11:31:18+08:00" />
 <meta itemprop="name" content="Event Exporter">
-<meta itemprop="description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置     See below for configuring the receivers - 实现方式 - 部署方式  GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
+<meta itemprop="description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置 实现方式 部署方式   GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
  InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes.">
 <meta itemprop="datePublished" content="2020-04-01T11:31:18+08:00" />
 <meta itemprop="dateModified" content="2020-04-01T11:31:18+08:00" />
-<meta itemprop="wordCount" content="370">
+<meta itemprop="wordCount" content="355">
 
 
 
 <meta itemprop="keywords" content="events,exporter," />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Event Exporter"/>
-<meta name="twitter:description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置     See below for configuring the receivers - 实现方式 - 部署方式  GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
+<meta name="twitter:description" content="基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置 实现方式 部署方式   GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
  InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes."/>
 
 	
@@ -188,14 +188,10 @@
 <li><a href="#event%E8%8E%B7%E5%8F%96%E6%96%B9%E5%BC%8F">event获取方式</a></li>
 <li><a href="#event%E6%9A%B4%E9%9C%B2%E6%96%B9%E5%BC%8F">event暴露方式</a></li>
 <li><a href="#%E6%8E%A8%E9%80%81%E8%A7%84%E5%88%99%E5%8F%8Areceiver%E9%85%8D%E7%BD%AE">推送规则及receiver配置</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F">实现方式</a></li>
+<li><a href="#%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F">部署方式</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a href="#see-below-for-configuring-the-receivers">See below for configuring the receivers</a>
-- <a href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F">实现方式</a>
-- <a href="#%E9%83%A8%E7%BD%B2%E6%96%B9%E5%BC%8F">部署方式</a>
-<ul>
 <li><a href="#googlecloudplatformk8s-stackdriverevent-exporter">GoogleCloudPlatform/k8s-stackdriver/event-exporter</a>
 <ul>
 <li><a href="#event%E8%8E%B7%E5%8F%96%E6%96%B9%E5%BC%8F">event获取方式</a></li>
@@ -305,7 +301,6 @@
           <span style="color:#66d9ef">version</span>: <span style="color:#e6db74">&#34;dev&#34;</span>
         <span style="color:#66d9ef">receiver</span>: <span style="color:#e6db74">&#34;slack&#34;</span>
 <span style="color:#66d9ef">receivers</span>:
-<span style="color:#75715e"># See below for configuring the receivers</span>
 </code></pre></div><p>规则分为match和drop规则，每个规则可以匹配以下属性：</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Rule</span> <span style="color:#66d9ef">struct</span> {
 	<span style="color:#a6e22e">Labels</span>     <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#66d9ef">string</span>

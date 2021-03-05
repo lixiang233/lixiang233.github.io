@@ -190,7 +190,7 @@ type PriorityQueue struct { stop chan struct{} clock util.Clock // pod initial b
       </a>
     </h1>
     <div class="nested-links f5 lh-copy nested-copy-line-height">
-      基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置     See below for configuring the receivers - 实现方式 - 部署方式  GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
+      基本概念  Event event-exporter   社区event-exporter相关项目  caicloud/event-exporter  event获取方式 event暴露方式 实现方式 部署方式   opsgenie/kubernetes-event-exporter  event获取方式 event暴露方式 推送规则及receiver配置 实现方式 部署方式   GoogleCloudPlatform/k8s-stackdriver/event-exporter  event获取方式 event暴露方式 实现方式 部署方式     Contact Me   基本概念 Event Event的定义是&quot;Event is a report of an event somewhere in the cluster&rdquo;，event反应记录了集群中发生的事件。默认配置下，event会在ETCD中保存一个小时。event有以下属性：
  InvolvedObject event所属的对象，如Pod、Node等。 Reason 对于event的简短描述，machine understandable string。如: FailedScheduling、NodeNotReady、NodeHasSufficientMemory等。 Message 对于event较为详细的描述，如NodeNotReady对应的message为：Node k8s-slave status is now: NodeNotReady。 Source 上报event的组件，如：systemd-monitor、kubelet等。 FirstTimestamp 首次记录该event时间。 LastTimestamp 最近一次记录该event时间。 Count event出现的次数。 Type event的类型，当前只有Normal和Warning两种。 EventTime event首次被发现的时间。一般不填，为空。 Action 记录对event所属对象进行了什么操作，或什么操作失败了。 Related 可选的辅助对象，用于更复杂的操作。 ReportingController 发出该event的controller。如：kubernetes.
     </div>
   </div>
