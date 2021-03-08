@@ -12,6 +12,15 @@
     
     
     <item>
+      <title>Tensile-Kube</title>
+      <link>https://lixiang233.github.io/blogs/tensile-kube/tensile-kube/</link>
+      <pubDate>Fri, 24 Jul 2020 16:43:17 +0800</pubDate>
+      
+      <guid>https://lixiang233.github.io/blogs/tensile-kube/tensile-kube/</guid>
+      <description>&lt;p&gt;介绍virtual-kubelet以及在它之上扩展实现了多集群调度管理的tensile-kube.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
       <title>ClientSet和Informer</title>
       <link>https://lixiang233.github.io/blogs/clientset/clientset/</link>
       <pubDate>Tue, 19 May 2020 15:42:17 +0800</pubDate>

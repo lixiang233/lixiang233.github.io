@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Tensile-Kube | Li Xiang Blogging</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.74.3" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.4fc0b62e4b82c997bb0041217cd6b979.css" rel="stylesheet">
+    
+
+    
+
+    
+      
+
+    
+
+    
+    
+    <meta property="og:title" content="Tensile-Kube" />
+<meta property="og:description" content="介绍virtual-kubelet以及在它之上扩展实现了多集群调度管理的tensile-kube." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lixiang233.github.io/blogs/tensile-kube/tensile-kube/" />
+<meta property="article:published_time" content="2020-07-24T16:43:17+08:00" />
+<meta property="article:modified_time" content="2020-07-24T16:43:17+08:00" />
+<meta itemprop="name" content="Tensile-Kube">
+<meta itemprop="description" content="介绍virtual-kubelet以及在它之上扩展实现了多集群调度管理的tensile-kube.">
+<meta itemprop="datePublished" content="2020-07-24T16:43:17+08:00" />
+<meta itemprop="dateModified" content="2020-07-24T16:43:17+08:00" />
+<meta itemprop="wordCount" content="4324">
+
+
+
+<meta itemprop="keywords" content="kubelet,multi-cluster,schedule,webhook," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Tensile-Kube"/>
+<meta name="twitter:description" content="介绍virtual-kubelet以及在它之上扩展实现了多集群调度管理的tensile-kube."/>
+
+	
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  
+  
+  <header class="cover bg-top" style="background-image: url('https://lixiang233.github.io/images/blogs/tensile-kube/tensilekube-03.png');">
+    <div class="pb3-m pb6-l bg-black-60">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        Li Xiang Blogging
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/blogs/" title="Articles page">
+              Articles
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/contact/" title="Contact page">
+              Contact
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+
+
+
+
+
+
+
+
+<a href="https://github.com/lixiang233" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv6 ph3 ph4-ns">
+        
+      </div>
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked">
+          
+        ARTICLES
+      </aside>
+      
+
+
+
+
+  <div id="sharing" class="mt3">
+
+    
+    <a href="https://www.facebook.com/sharer.php?u=https://lixiang233.github.io/blogs/tensile-kube/tensile-kube/" class="facebook no-underline" aria-label="share on Facebook">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
+
+    </a>
+
+    
+    
+    <a href="https://twitter.com/share?url=https://lixiang233.github.io/blogs/tensile-kube/tensile-kube/&amp;text=Tensile-Kube" class="twitter no-underline" aria-label="share on Twitter">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+    </a>
+
+    
+    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://lixiang233.github.io/blogs/tensile-kube/tensile-kube/&amp;title=Tensile-Kube" class="linkedin no-underline" aria-label="share on LinkedIn">
+      <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+
+    </a>
+  </div>
+
+
+      <h1 class="f1 athelas mt3 mb1">Tensile-Kube</h1>
+      
+      <p class="tracked">
+          By <strong>
+          
+              Li Xiang
+          
+          </strong>
+      </p>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2020-07-24T16:43:17+08:00">July 24, 2020</time>
+
+      
+      
+        <span class="f6 mv4 dib tracked"> - 9 minutes read</span>
+        <span class="f6 mv4 dib tracked"> - 4324 words</span>
+        
+        <span class="f6 mv4 dib tracked"> - <span id="busuanzi_value_page_pv"></span> views</span>
+        
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><p>介绍virtual-kubelet以及在它之上扩展实现了多集群调度管理的tensile-kube.</p>
+<!-- raw HTML omitted -->
+<ul>
+<li><a href="#virtual-kubelet%E7%AE%80%E4%BB%8B">Virtual Kubelet简介</a></li>
+<li><a href="#tensile-kube">Tensile-Kube</a>
+<ul>
+<li><a href="#provider">Provider</a>
+<ul>
+<li><a href="#pod%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86">Pod生命周期管理</a></li>
+<li><a href="#node%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86">Node生命周期管理</a></li>
+</ul>
+</li>
+<li><a href="#multi-scheduler">Multi-Scheduler</a></li>
+<li><a href="#descheduler">Descheduler</a></li>
+<li><a href="#webhook">WebHook</a></li>
+</ul>
+</li>
+</ul>
+<!-- raw HTML omitted -->
+<hr>
+<h1 id="virtual-kubelet简介">Virtual Kubelet简介</h1>
+<p><img src="/images/blogs/tensile-kube/tensilekube-01.svg" alt="img"></p>
+<p><code>virtual kubelet(VK)</code>是一种kubelet的实现，通过伪装成kubelet来提供k8s连接其他api的能力，VK允许节点由其他服务（如ACI，AWS Fargate，IoT Edge，Tensile Kube等）支持。<em><strong>VK支持通过插件形式扩展，只需要实现Provider即可支持不同的后端</strong></em>，VK模拟kubelet并向apiserver注册node，当有pod相关事件时会调用<code>Provider</code>进行处理，当前支持的特性：</p>
+<ul>
+<li>create, delete and update pods</li>
+<li>container logs, exec, and metrics</li>
+<li>get pod, pods and pod status</li>
+<li>capacity</li>
+<li>node addresses, node capacity, node daemon endpoints</li>
+<li>operating system</li>
+<li>bring your own virtual network</li>
+</ul>
+<p>要实现一个Provider，需要实现下面的<code>Provider</code>接口：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// Provider contains the methods required to implement a virtual-kubelet provider.
+</span><span style="color:#75715e">//
+</span><span style="color:#75715e">// Errors produced by these methods should implement an interface from
+</span><span style="color:#75715e">// github.com/virtual-kubelet/virtual-kubelet/errdefs package in order for the
+</span><span style="color:#75715e">// core logic to be able to understand the type of failure.
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Provider</span> <span style="color:#66d9ef">interface</span> {
+	<span style="color:#a6e22e">node</span>.<span style="color:#a6e22e">PodLifecycleHandler</span>
+
+	<span style="color:#75715e">// GetContainerLogs retrieves the logs of a container by name from the provider.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">GetContainerLogs</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">namespace</span>, <span style="color:#a6e22e">podName</span>, <span style="color:#a6e22e">containerName</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">opts</span> <span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">ContainerLogOpts</span>) (<span style="color:#a6e22e">io</span>.<span style="color:#a6e22e">ReadCloser</span>, <span style="color:#66d9ef">error</span>)
+
+	<span style="color:#75715e">// RunInContainer executes a command in a container in the pod, copying data
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// between in/out/err and the container&#39;s stdin/stdout/stderr.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">RunInContainer</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">namespace</span>, <span style="color:#a6e22e">podName</span>, <span style="color:#a6e22e">containerName</span> <span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">cmd</span> []<span style="color:#66d9ef">string</span>, <span style="color:#a6e22e">attach</span> <span style="color:#a6e22e">api</span>.<span style="color:#a6e22e">AttachIO</span>) <span style="color:#66d9ef">error</span>
+
+	<span style="color:#75715e">// ConfigureNode enables a provider to configure the node object that
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// will be used for Kubernetes.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">ConfigureNode</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#f92672">*</span><span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">Node</span>)
+}
+
+<span style="color:#66d9ef">type</span> <span style="color:#a6e22e">PodLifecycleHandler</span> <span style="color:#66d9ef">interface</span> {
+	<span style="color:#75715e">// CreatePod takes a Kubernetes Pod and deploys it within the provider.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">CreatePod</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">pod</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Pod</span>) <span style="color:#66d9ef">error</span>
+
+	<span style="color:#75715e">// UpdatePod takes a Kubernetes Pod and updates it within the provider.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">UpdatePod</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">pod</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Pod</span>) <span style="color:#66d9ef">error</span>
+
+	<span style="color:#75715e">// DeletePod takes a Kubernetes Pod and deletes it from the provider. Once a pod is deleted, the provider is
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// expected to call the NotifyPods callback with a terminal pod status where all the containers are in a terminal
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// state, as well as the pod. DeletePod may be called multiple times for the same pod.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">DeletePod</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">pod</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Pod</span>) <span style="color:#66d9ef">error</span>
+
+	<span style="color:#75715e">// GetPod retrieves a pod by name from the provider (can be cached).
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The Pod returned is expected to be immutable, and may be accessed
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// concurrently outside of the calling goroutine. Therefore it is recommended
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// to return a version after DeepCopy.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">GetPod</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">namespace</span>, <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Pod</span>, <span style="color:#66d9ef">error</span>)
+
+	<span style="color:#75715e">// GetPodStatus retrieves the status of a pod by name from the provider.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The PodStatus returned is expected to be immutable, and may be accessed
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// concurrently outside of the calling goroutine. Therefore it is recommended
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// to return a version after DeepCopy.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">GetPodStatus</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">namespace</span>, <span style="color:#a6e22e">name</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">PodStatus</span>, <span style="color:#66d9ef">error</span>)
+
+	<span style="color:#75715e">// GetPods retrieves a list of all pods running on the provider (can be cached).
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The Pods returned are expected to be immutable, and may be accessed
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// concurrently outside of the calling goroutine. Therefore it is recommended
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// to return a version after DeepCopy.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">GetPods</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>) ([]<span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Pod</span>, <span style="color:#66d9ef">error</span>)
+}
+</code></pre></div><p>除了Provider接口，还提供了一些可选的接口：</p>
+<ul>
+<li>NodeProvider接口，提供node健康检查以及更新node状态能力(由provider调用callback向apiserver更新):</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">NodeProvider</span> <span style="color:#66d9ef">interface</span> { <span style="color:#75715e">// nolint:golint
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// Ping checks if the node is still active.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// This is intended to be lightweight as it will be called periodically as a
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// heartbeat to keep the node marked as ready in Kubernetes.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">Ping</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>) <span style="color:#66d9ef">error</span>
+
+	<span style="color:#75715e">// NotifyNodeStatus is used to asynchronously monitor the node.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The passed in callback should be called any time there is a change to the
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// node&#39;s status.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// This will generally trigger a call to the Kubernetes API server to update
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// the status.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">//
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// NotifyNodeStatus should not block callers.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">NotifyNodeStatus</span>(<span style="color:#a6e22e">ctx</span> <span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#a6e22e">cb</span> <span style="color:#66d9ef">func</span>(<span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Node</span>))
+}
+</code></pre></div><ul>
+<li>PodNotifier接口，提供更新pod状态能力(由provider调用callback向apiserver更新):</li>
+</ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">PodNotifier</span> <span style="color:#66d9ef">interface</span> {
+	<span style="color:#75715e">// NotifyPods instructs the notifier to call the passed in function when
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// the pod status changes. It should be called when a pod&#39;s status changes.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">//
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The provided pointer to a Pod is guaranteed to be used in a read-only
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// fashion. The provided pod&#39;s PodStatus should be up to date when
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// this function is called.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">//
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// NotifyPods must not block the caller since it is only used to register the callback.
+</span><span style="color:#75715e"></span>	<span style="color:#75715e">// The callback passed into `NotifyPods` may block when called.
+</span><span style="color:#75715e"></span>	<span style="color:#a6e22e">NotifyPods</span>(<span style="color:#a6e22e">context</span>.<span style="color:#a6e22e">Context</span>, <span style="color:#66d9ef">func</span>(<span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Pod</span>))
+}
+</code></pre></div><h1 id="tensile-kube">Tensile-Kube</h1>
+<p>tensile-kube能够使不同k8s集群拥有一起使用的能力，在tensile-kube部署架构中，集群分为上、下两层，对应关系为1对多。Tensile-kube通过实现VK的provider，启动多个运行tensile-kube provider的VK进程对接(通过clientset和informer)多个下层集群来实现多集群管理。</p>
+<p>在上层集群看来，每个下层集群都是一个单独的节点，下层集群对上层集群无感知，上、下层集群有各自的调度器，pod最终调度到node是经过了两次调度，第一次是上层集群将pod调度到VK上，第二次是VK的provider将pod通过clientset在对接的下层集群创建后由下层集群的scheduler调度，对下层集群生效的调度规则将写入pod的annotation中，由provider提取出来修改pod配置后在下层集群创建。Provider中会启动多个controller将上层集群的Config Map、Secret、PV、PVC、Service、Endpoint同步到下层集群中。</p>
+<ul>
+<li>
+<p>部署架构图：
+<img src="/images/blogs/tensile-kube/tensilekube-02.png" alt="img"></p>
+</li>
+<li>
+<p>组件架构图：
+<img src="/images/blogs/tensile-kube/tensilekube-03.png" alt="img"></p>
+</li>
+</ul>
+<p>tensile-kube项目中有四个单独的组件：<code>provider(Virtual-Node)</code>、<code>descheduler</code>、<code>webhook</code>、<code>multi-scheduler</code>。</p>
+<h2 id="provider">Provider</h2>
+<p>Provider是一个VK的provider，Provider实现了VK中的Provider、NodeProvider、PodNotifier接口，Provider结构体：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// VirtualK8S is the key struct to implement the tensile kubernetes
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">VirtualK8S</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">master</span>               <span style="color:#a6e22e">kubernetes</span>.<span style="color:#a6e22e">Interface</span>
+	<span style="color:#a6e22e">client</span>               <span style="color:#a6e22e">kubernetes</span>.<span style="color:#a6e22e">Interface</span>
+	<span style="color:#a6e22e">metricClient</span>         <span style="color:#a6e22e">versioned</span>.<span style="color:#a6e22e">Interface</span>
+	<span style="color:#a6e22e">config</span>               <span style="color:#f92672">*</span><span style="color:#a6e22e">rest</span>.<span style="color:#a6e22e">Config</span>
+	<span style="color:#a6e22e">nodeName</span>             <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">version</span>              <span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">daemonPort</span>           <span style="color:#66d9ef">int32</span>
+	<span style="color:#a6e22e">ignoreLabels</span>         []<span style="color:#66d9ef">string</span>
+	<span style="color:#a6e22e">clientCache</span>          <span style="color:#a6e22e">clientCache</span>
+	<span style="color:#a6e22e">rm</span>                   <span style="color:#f92672">*</span><span style="color:#a6e22e">manager</span>.<span style="color:#a6e22e">ResourceManager</span>
+	<span style="color:#a6e22e">updatedNode</span>          <span style="color:#66d9ef">chan</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Node</span>
+	<span style="color:#a6e22e">updatedPod</span>           <span style="color:#66d9ef">chan</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">corev1</span>.<span style="color:#a6e22e">Pod</span>
+	<span style="color:#a6e22e">enableServiceAccount</span> <span style="color:#66d9ef">bool</span>
+	<span style="color:#a6e22e">stopCh</span>               <span style="color:#f92672">&lt;-</span><span style="color:#66d9ef">chan</span> <span style="color:#66d9ef">struct</span>{}
+	<span style="color:#a6e22e">providerNode</span>         <span style="color:#f92672">*</span><span style="color:#a6e22e">common</span>.<span style="color:#a6e22e">ProviderNode</span>
+	<span style="color:#a6e22e">configured</span>           <span style="color:#66d9ef">bool</span>
+}
+</code></pre></div><p>其中master和client分别为上、下层集群的clienset，Provider通过这两个clientset来同步上下层集群，对下层集群进行操作。初始化Provider时，会启动一些Controller，通过使用informer，注册相应handler，将上层集群的Config Map、Secret、PV、PVC、Service、Endpoint同步到下层集群中，并且使用了client-go的workqueue实现了同步事件的流控。</p>
+<h3 id="pod生命周期管理">Pod生命周期管理</h3>
+<p>创建：</p>
+<ol>
+<li>根据Provider配置的ignoreLabels(可能影响到下层集群的label)，将Pod配置中的这些label存入annotation中并删除，并将保存在annotation中的对下层集群的NodeSelector、Affinity、Tolerations恢复到Pod中。</li>
+<li>检查pod的NS、configmap、secret、pvc是否在下层集群存在，不存在则创建</li>
+<li>使用修改后的Pod配置在下层集群创建Pod</li>
+</ol>
+<p>删除：</p>
+<ul>
+<li>判断Pod是否由Provider创建，是则直接从下层集群删除该Pod</li>
+</ul>
+<p>更新：</p>
+<ol>
+<li>上层集群对Pod更新：判断Pod是否由Provider创建，是则和创建时一样对Pod配置进行修改，并比较是否有更新，是则使用修改后的配置更新下层集群的Pod</li>
+<li>下层集群对Pod更新：通过实现PodNotifier接口，Provider在下层集群对Pod有更新事件时将创建/更新时修改的Pod配置恢复，然后调用接口的回调函数通过VK对上层集群Pod进行更新。</li>
+</ol>
+<p>查询：</p>
+<ul>
+<li>查询Pod时Provider直接从下层集群中informer cache获取，恢复创建/更新时修改的配置后返回</li>
+</ul>
+<p>查看容器日志/执行命令：</p>
+<ul>
+<li>直接通过下层集群的clientset获取日志，执行命令。</li>
+</ul>
+<h3 id="node生命周期管理">Node生命周期管理</h3>
+<p>由于VK将整个下层集群虚拟为一个节点，因此需要根据下层集群中的节点状态生成虚拟节点的配置。</p>
+<p>创建Node：</p>
+<ul>
+<li>Provider通过实现接口中定义的ConfigureNode来对上层集群中该集群对应的Node自定义。通过获取集群所有可调度的节点容量，减去集群中所有Pod的分配量计算出该集群资源总量，然后设置一些Node默认的属性后返回Node配置。</li>
+</ul>
+<p>Node保活：</p>
+<ul>
+<li>Provider通过实现VK的NodeProvider接口的Ping方法检查Node是否健康，Ping中调用下层集群的clientset检查与下层集群的连接是否正常。</li>
+</ul>
+<p>Node更新：</p>
+<ul>
+<li>Provider初始化时启动了Node和Pod的informer，注册了处理事件的handler，并且Provider实现了NodeProvider接口的NotifyNodeStatus方法，在有Pod、Node事件时判断该事件是否会影响集群资源容量，有影响则调用NotifyNodeStatus中传入的回调函数更新Node状态。</li>
+</ul>
+<h2 id="multi-scheduler">Multi-Scheduler</h2>
+<p>由于上层集群中看到的下层集群只是一个Node，下层集群中所有可用资源会对应到该Node的容量，当下层集群中有资源碎片时，上层集群无法感知到资源碎片的存在，可能导致上层集群调度到下层集群上的Pod在下层集群中无法调度，为了解决这个问题引入了<code>Multi-Scheduler</code>。</p>
+<p><code>Multi-Scheduler</code>是一个<code>Scheduler-Framewor</code>k的<code>Filter</code>插件(类似老版本scheduler中的预选)，插件初始化时，会为每个下层集群生成一个Scheduler实例，启动Scheduler实例中的informer，将集群信息同步到SchedulerCache中，然后将该实例存入schedulers Map。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#75715e">// MultiSchedulingPlugin is plugin implemented scheduling framework
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">MultiSchedulingPlugin</span> <span style="color:#66d9ef">struct</span> {
+	<span style="color:#a6e22e">frameworkHandler</span> <span style="color:#a6e22e">framework</span>.<span style="color:#a6e22e">FrameworkHandle</span>
+	<span style="color:#a6e22e">schedulers</span>       <span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">string</span>]<span style="color:#f92672">*</span><span style="color:#a6e22e">Scheduler</span>
+}
+</code></pre></div><p>当有Pod调度时，Multi-Scheduler的Filter方法会被scheduler调用多次(每个Node调用一次)，判断Pod能否调度到Node上，Multi-Scheduler的Filter具体判断过程：</p>
+<ol>
+<li>Node、Pod合法性检查</li>
+<li>从schedulers Map中找到Node对应的scheduler实例</li>
+<li>修改Pod的label、annotation为下层集群所需(同创建Pod)</li>
+<li>调用Scheduler实例的Schedule方法，获取调度结果</li>
+<li>判断是否有可以调度的Node，如果没有则返回不可调度</li>
+</ol>
+<p>由于Multi-Scheduler会<strong>将所有下层集群的信息缓存</strong>，在集群数量较大时会占用较多的资源和调度时间，因此<strong>不建议使用Multi-Scheduler</strong>。</p>
+<h2 id="descheduler">Descheduler</h2>
+<p>由于<code>Multi-Scheduler</code>对资源消耗较大，在不使用<code>Multi-Scheduler</code>情况下，为了避免资源碎片导致的调度失败，增加了<code>Descheduler</code>组件。</p>
+<p>tensile-kube中的<code>Descheduler</code>是在社区Descheduler基础上修改的，只保留了<code>PodLifeTime</code>策略，并对该策略进行了修改。</p>
+<p><code>Descheduler</code>会定期运行<code>PodLifeTime</code>策略，运行时，会将集群中所有进入<code>Pending</code>状态超过一定时间和已经尝试过在下层集群调度并且调度失败的Pod筛选出来，在上层集群中删除这些Pod并重新创建(驱逐)，为了避免Pod被重新调度到Pod调度失败的集群，会在创建Pod之前在Pod的<code>NodeAffinity</code>中加入排除Pod现有Node的selector。</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-go" data-lang="go"><span style="color:#a6e22e">nodeSelReq</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">NodeSelectorRequirement</span>{
+	<span style="color:#a6e22e">Key</span>:      <span style="color:#e6db74">&#34;kubernetes.io/hostname&#34;</span>,
+	<span style="color:#a6e22e">Operator</span>: <span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">NodeSelectorOpNotIn</span>,
+	<span style="color:#a6e22e">Values</span>:   []<span style="color:#66d9ef">string</span>{<span style="color:#a6e22e">nodeName</span>},
+}
+
+<span style="color:#a6e22e">nodeSelector</span> <span style="color:#f92672">:=</span> <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">NodeSelector</span>{
+	<span style="color:#a6e22e">NodeSelectorTerms</span>: []<span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">NodeSelectorTerm</span>{
+		{
+			<span style="color:#a6e22e">MatchExpressions</span>: []<span style="color:#a6e22e">v1</span>.<span style="color:#a6e22e">NodeSelectorRequirement</span>{<span style="color:#a6e22e">nodeSelReq</span>},
+		},
+	},
+}
+</code></pre></div><p><code>Descheduler</code>中还实现了一个<code>NodeFreeze</code>机制，将Pod上次被<code>Descheduler</code>驱逐时所在的Node和时间记录下来，设置10分钟的freeze时间，在Pod驱逐时检查Pod是否有在freeze时间内的Node，如果有，将这些Node也加入排除的selector中。</p>
+<h2 id="webhook">WebHook</h2>
+<p>tensile-kube中的<code>webhook</code>实现了一个控制Pod创建的<code>Mutating Admission Webhook</code>：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">webhooks</span>:
+  - <span style="color:#66d9ef">clientConfig</span>:
+      <span style="color:#66d9ef">caBundle</span>: ${caBundle}
+      <span style="color:#66d9ef">service</span>:
+        <span style="color:#66d9ef">name</span>: vk-webhook
+        <span style="color:#66d9ef">namespace</span>: kube-system
+        <span style="color:#66d9ef">path</span>: /mutate
+    <span style="color:#66d9ef">failurePolicy</span>: Fail
+    <span style="color:#66d9ef">name</span>: xxx
+    <span style="color:#66d9ef">rules</span>:
+      - <span style="color:#66d9ef">apiGroups</span>:
+          - <span style="color:#e6db74">&#34;&#34;</span>
+        <span style="color:#66d9ef">apiVersions</span>:
+          - v1
+        <span style="color:#66d9ef">operations</span>:
+          - CREATE
+        <span style="color:#66d9ef">resources</span>:
+          - pods
+    <span style="color:#66d9ef">sideEffects</span>: None
+</code></pre></div><p>该<code>webhook</code>会把使用在下层集群中会对上层集群调度产生影响的<code>NodeSelector</code>、<code>Affinity</code>、<code>Tolerations</code>保存在Pod的<code>annotation</code>中，例如：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">clusterSelector</span>: <span style="color:#e6db74">&#39;{&#34;tolerations&#34;:[{&#34;key&#34;:&#34;node.kubernetes.io/not-ready&#34;,&#34;operator&#34;:&#34;Exists&#34;,&#34;effect&#34;:&#34;NoExecute&#34;},{&#34;key&#34;:&#34;node.kubernetes.io/unreachable&#34;,&#34;operator&#34;:&#34;Exists&#34;,&#34;effect&#34;:&#34;NoExecute&#34;},{&#34;key&#34;:&#34;test&#34;,&#34;operator&#34;:&#34;Exists&#34;,&#34;effect&#34;:&#34;NoExecute&#34;},{&#34;key&#34;:&#34;test1&#34;,&#34;operator&#34;:&#34;Exists&#34;,&#34;effect&#34;:&#34;NoExecute&#34;},{&#34;key&#34;:&#34;test2&#34;,&#34;operator&#34;:&#34;Exists&#34;,&#34;effect&#34;:&#34;NoExecute&#34;},{&#34;key&#34;:&#34;test3&#34;,&#34;operator&#34;:&#34;Exists&#34;,&#34;effect&#34;:&#34;NoExecute&#34;}]}&#39;</span>
+</code></pre></div><p>当Pod在Provider中创建时，会将这些信息恢复。</p>
+<hr>
+<h1 id="contact-me">Contact Me</h1>
+
+
+
+<form class="black-80 sans-serif" accept-charset="UTF-8" action="https://formspree.io/xaypvadb" method="POST" role="form">
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray"  for="name">Your Name</label>
+    <input type="text" id="name" name="name" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="name"/>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="email">Email Address</label>
+    <input type="email" id="email" name="email" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="email"/>
+    <div class="requirements f6 gray glow i ph3 overflow-hidden">
+      An email address is required.
+    </div>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="message">Message</label>
+    <textarea id="message" name="message" class="w-100 f5 pv3 ph3 bg-light-gray bn h4" aria-labelledby="message"></textarea>
+
+    <input class="db w-100 mv2 white pa3 bn hover-shadow hover-bg-black bg-animate bg-black" type="submit" value="Send" />
+
+</form><ul class="pa0">
+  
+   <li class="list">
+     <a href="/tags/kubelet" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">kubelet</a>
+   </li>
+  
+   <li class="list">
+     <a href="/tags/multi-cluster" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">multi-cluster</a>
+   </li>
+  
+   <li class="list">
+     <a href="/tags/schedule" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">schedule</a>
+   </li>
+  
+   <li class="list">
+     <a href="/tags/webhook" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">webhook</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+  <div class="bg-light-gray pa3 nested-list-reset nested-copy-line-height nested-links">
+    <p class="f5 b mb3">Related</p>
+    <ul class="pa0 list">
+	   
+	     <li  class="mb2">
+          <a href="/blogs/schedulingqueue/scheduling-queue/">Scheduling Queue</a>
+        </li>
+	    
+    </ul>
+</div>
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://lixiang233.github.io" >
+    &copy;  Li Xiang Blogging 2021 
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+<a href="https://github.com/lixiang233" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+  </body>
+</html>

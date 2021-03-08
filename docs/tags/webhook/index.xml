@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>schedule on Li Xiang Blogging</title>
-    <link>https://lixiang233.github.io/tags/schedule/</link>
-    <description>Recent content in schedule on Li Xiang Blogging</description>
+    <title>webhook on Li Xiang Blogging</title>
+    <link>https://lixiang233.github.io/tags/webhook/</link>
+    <description>Recent content in webhook on Li Xiang Blogging</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Fri, 24 Jul 2020 16:43:17 +0800</lastBuildDate>
     
-	<atom:link href="https://lixiang233.github.io/tags/schedule/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://lixiang233.github.io/tags/webhook/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -18,15 +18,6 @@
       
       <guid>https://lixiang233.github.io/blogs/tensile-kube/tensile-kube/</guid>
       <description>&lt;p&gt;介绍virtual-kubelet以及在它之上扩展实现了多集群调度管理的tensile-kube.&lt;/p&gt;</description>
-    </item>
-    
-    <item>
-      <title>Scheduling Queue</title>
-      <link>https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/</link>
-      <pubDate>Mon, 27 Apr 2020 15:23:43 +0800</pubDate>
-      
-      <guid>https://lixiang233.github.io/blogs/schedulingqueue/scheduling-queue/</guid>
-      <description>&lt;p&gt;scheduling-queue介绍，以及scheduling-queue运行原理剖析&lt;/p&gt;</description>
     </item>
     
   </channel>
