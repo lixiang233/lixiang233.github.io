@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Kube-batch | Li Xiang Blogging</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.74.3" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.4fc0b62e4b82c997bb0041217cd6b979.css" rel="stylesheet">
+    
+
+    
+
+    
+      
+
+    
+
+    
+    
+    <meta property="og:title" content="Kube-batch" />
+<meta property="og:description" content="简要介绍社区批调度器kube-batch" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lixiang233.github.io/blogs/kube-batch/kube-batch/" />
+<meta property="article:published_time" content="2020-08-12T17:26:17+08:00" />
+<meta property="article:modified_time" content="2020-08-12T17:26:17+08:00" />
+<meta itemprop="name" content="Kube-batch">
+<meta itemprop="description" content="简要介绍社区批调度器kube-batch">
+<meta itemprop="datePublished" content="2020-08-12T17:26:17+08:00" />
+<meta itemprop="dateModified" content="2020-08-12T17:26:17+08:00" />
+<meta itemprop="wordCount" content="5368">
+
+
+
+<meta itemprop="keywords" content="schedule," />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Kube-batch"/>
+<meta name="twitter:description" content="简要介绍社区批调度器kube-batch"/>
+
+	
+
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  
+  
+  <header class="cover bg-top" style="background-image: url('https://lixiang233.github.io/images/blogs/kube-batch/kubebatch-01.png');">
+    <div class="pb3-m pb6-l bg-black-60">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      
+        Li Xiang Blogging
+      
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/blogs/" title="Articles page">
+              Articles
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/contact/" title="Contact page">
+              Contact
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+
+
+
+
+
+
+
+
+<a href="https://github.com/lixiang233" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+      <div class="tc-l pv6 ph3 ph4-ns">
+        
+      </div>
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked">
+          
+        ARTICLES
+      </aside>
+      
+
+
+
+
+  <div id="sharing" class="mt3">
+
+    
+    <a href="https://www.facebook.com/sharer.php?u=https://lixiang233.github.io/blogs/kube-batch/kube-batch/" class="facebook no-underline" aria-label="share on Facebook">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
+
+    </a>
+
+    
+    
+    <a href="https://twitter.com/share?url=https://lixiang233.github.io/blogs/kube-batch/kube-batch/&amp;text=Kube-batch" class="twitter no-underline" aria-label="share on Twitter">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+    </a>
+
+    
+    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://lixiang233.github.io/blogs/kube-batch/kube-batch/&amp;title=Kube-batch" class="linkedin no-underline" aria-label="share on LinkedIn">
+      <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+
+    </a>
+  </div>
+
+
+      <h1 class="f1 athelas mt3 mb1">Kube-batch</h1>
+      
+      <p class="tracked">
+          By <strong>
+          
+              Li Xiang
+          
+          </strong>
+      </p>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2020-08-12T17:26:17+08:00">August 12, 2020</time>
+
+      
+      
+        <span class="f6 mv4 dib tracked"> - 11 minutes read</span>
+        <span class="f6 mv4 dib tracked"> - 5368 words</span>
+        
+        <span class="f6 mv4 dib tracked"> - <span id="busuanzi_value_page_pv"></span> views</span>
+        
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><p>简要介绍社区批调度器kube-batch</p>
+<!-- raw HTML omitted -->
+<ul>
+<li><a href="#%E8%B5%84%E6%BA%90%E7%B1%BB%E5%9E%8B">资源类型</a></li>
+<li><a href="#%E8%B0%83%E5%BA%A6%E6%A1%86%E6%9E%B6">调度框架</a>
+<ul>
+<li><a href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6">配置文件</a></li>
+<li><a href="#actions">Actions</a>
+<ul>
+<li><a href="#allocate-action">Allocate action</a>
+<ul>
+<li><a href="#allocate-action%E8%B0%83%E5%BA%A6task%E6%B5%81%E7%A8%8B">allocate action调度task流程</a></li>
+<li><a href="#queuejobtask%E6%8E%92%E5%BA%8F">queue、job、task排序</a></li>
+</ul>
+</li>
+<li><a href="#backfill-action">Backfill action</a></li>
+<li><a href="#preempt-action">Preempt action</a></li>
+<li><a href="#reclaim-action">Reclaim action</a></li>
+</ul>
+</li>
+<li><a href="#plugins">Plugins</a>
+<ul>
+<li><a href="#gang">gang</a></li>
+<li><a href="#drf">drf</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#contact-me">Contact Me</a></li>
+</ul>
+<!-- raw HTML omitted -->
+<hr>
+<p>Kube-batch是一个k8s的批调度器，它提供了在k8s上运行批量作业的能力。Kube-batch内部定义了一些自定义资源与概念，拥有自己的调度框架与算法，与kube-scheduler完全不同。</p>
+<p><img src="/images/blogs/kube-batch/kubebatch-01.png" alt="img"></p>
+<h1 id="资源类型">资源类型</h1>
+<p>Kube-batch中有以下概念：</p>
+<ul>
+<li>
+<p>podgroup：CRD，pod组，对应多个Pod，需要配置minAvaliable，并且可以配置priorityclass</p>
+</li>
+<li>
+<p>queue：CRD，相当于namespace，每个queue通过权重来分配相应的资源，podgroup可以指定使用的queue。</p>
+</li>
+<li>
+<p>task：task即一个需要调度的pod，task是调度的单元，pod需要配置podgroup来表示对应的job。一个task在kube-batch中有以下状态：</p>
+<ul>
+<li>Pending：等待调度</li>
+<li>Allocated：调度器已经为task分配node</li>
+<li>Pipelined：调度器已经为task分配node等待node上资源释放</li>
+<li>Binding：task正在执行绑定</li>
+<li>Bound：task已经绑定到node</li>
+<li>Running：task running</li>
+<li>Releasing：task被删除，正在释放资源</li>
+<li>Succeeded</li>
+<li>Failed</li>
+<li>Unknown</li>
+</ul>
+</li>
+<li>
+<p>job：对应一个podgourp，下面有多个task，在批调度中job作为每次调度的整体(注意与k8s的job区分)</p>
+</li>
+</ul>
+<h1 id="调度框架">调度框架</h1>
+<p>kube-batch调度框架中有下面几个概念：</p>
+<ul>
+<li>action：实现调度的逻辑，调用session提供的方法实现调度过程，当前实现的action有：Allocate、Backfill、Preempt、Reclaim</li>
+<li>session：每次调度单独生成，包含当前集群资源快照、job、queue、task；session中会提供一系列方法供action调用，包括: Reclaimable, Preemptable, Overused, JobReady, JobPipelined, JobValid, JobOrderFn, QueueOrderFn, TaskOrderFn, PredicateFn, NodePrioritizers, Pipeline, Allocate和Evict。</li>
+<li>plugin：实现了session部分方法所调用的函数，在session启动时会调用plugin的OnSessionOpen方法将plugin实现的函数注册到session中。这里的plugin类似于scheduler-plugin，每个方法需要调用的plugin函数相当于scheduler-framework扩展点。当前实现的plugin有：Conformance、DRF、Gang、Nodeorder、Predicates、Priority、Proportion。</li>
+</ul>
+<h2 id="配置文件">配置文件</h2>
+<p>kube-batch配置文件中可以指定使用的action和plugin，默认的配置：</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#66d9ef">actions</span>: <span style="color:#e6db74">&#34;allocate, backfill&#34;</span>
+<span style="color:#66d9ef">tiers</span>:
+- <span style="color:#66d9ef">plugins</span>:
+  - <span style="color:#66d9ef">name</span>: priority
+  - <span style="color:#66d9ef">name</span>: gang
+- <span style="color:#66d9ef">plugins</span>:
+  - <span style="color:#66d9ef">name</span>: drf
+  - <span style="color:#66d9ef">name</span>: predicates
+  - <span style="color:#66d9ef">name</span>: proportion
+  - <span style="color:#66d9ef">name</span>: nodeorder
+</code></pre></div><p>其中每个tier是一组plugin，在session提供的方法中会优先调用排在前面tier的plugin，不同方法对tier的处理不同，有些会遍历所有tier，有些会在某个tier调用完成有结果后直接忽略后面的tier。</p>
+<h2 id="actions">Actions</h2>
+<p>kube-batch默认间隔一秒(可配置)调用所有配置了的action的Execute方法。</p>
+<h3 id="allocate-action">Allocate action</h3>
+<p>allocate action负责将task调度到对应节点，每次执行execute方法会生成以下缓存：</p>
+<ul>
+<li>queues：存放所有queue的优先级队列</li>
+<li>jobsMap：存放queue下面所有的job，key为queueID，value为存放job的优先级队列</li>
+<li>pendingTasks：存放job下所有pending的task，key为jobID，value为存放task的优先级队列</li>
+</ul>
+<h4 id="allocate-action调度task流程">allocate action调度task流程</h4>
+<ol>
+<li>遍历所有的job，将job对应的queue放入queues，job放入jobsMap（queue和job都有优先级）</li>
+<li>从queues中pop出一个queue，queues为空直接结束。</li>
+<li>检查queue中的资源是否已耗尽，已耗尽则执行2（不将queue重新加入队列）</li>
+<li>从jobsMap中该queue对应的优先级队列pop出一个job，若无job则执行2（不将queue重新加入队列）</li>
+<li>将job下的所有pending状态的非besteffort的task加入pendingTasks中该job对应的优先级队列</li>
+<li>从5中优先级队列pop出一个task，若队列中task为空，执行12（不将job重新加入队列）</li>
+<li>调用session的PredicateFn获取该task预选的节点，若没有通过预选的节点，执行12</li>
+<li>调用session的NodePrioritizers对预选出的节点打分</li>
+<li>选出分数最高的节点，如果节点剩余资源大于task所需资源，则将task分配到该节点(若分配后判断job是否ready，ready则将job所有已分配节点的 绑定到节点)，否则记录下缺少的资源信息(用于获取调度失败原因)，并判断节点是否有正在释放的资源满足task需求，若有将task加入node的pi ne。</li>
+<li>调用session的JobReady判断job是否ready（gang实现该方法调用的jobReadyFn），若job ready，则将job重新加回队列，执行12.</li>
+<li>执行6.</li>
+<li>将queue重新加入队列，执行2.</li>
+</ol>
+<p>总结：execute每次会从当前优先级最高的queue中取出优先级最高job进行调度，job中每个不是besteffort的task都会按照优先级尝试一次调度，如果某个task调度后job已经满足ready条件，则结束该job的当次调度，重新将job加入queue（只有该情况会将job重新加入queue）。所有queue中都没有job或资源耗尽时结束该次execute（即所有task都尝试过一次调度）。</p>
+<h4 id="queuejobtask排序">queue、job、task排序</h4>
+<ul>
+<li>queue排序：queue在处理之前会被加入到优先级队列中，每次会从该队列pop出一个queue进行处理，queue排序由session的QueueOrderFn方法实现，目前只有proportion plugin实现了该方法中需要的less func，share值（queue已分配资源/queue所有资源的最大值）越小的queue优先级越高，排在队列前面。share相同比较创建时间、UUID。</li>
+<li>job排序：与queue排序类似，由session的JobOrderFn实现，当前有三个插件实现了该方法中需要的less func：
+<ul>
+<li>gang：未ready的job比ready的job优先级高，排在队列前面</li>
+<li>priority：job的priority越高优先级越高，排在队列前面</li>
+<li>drf：job的share（job已分配资源/总资源的最大值）越低，优先级越高，排在队列前面</li>
+</ul>
+</li>
+<li>task排序：与queue排序类似，由session的TaskOrderFn实现，priority插件实现了该方法需要的less func，task的priority越高优先级越高，排在队列前面</li>
+</ul>
+<h3 id="backfill-action">Backfill action</h3>
+<p>当前的Backfill action只对Allocate action中忽略了的besteffort的task进行调度，流程如下：</p>
+<ol>
+<li>遍历session中所有的job</li>
+<li>遍历job中所有pending的task</li>
+<li>如果task不是besteffort的，则执行2</li>
+<li>遍历session中的所有node</li>
+<li>调用session的PredicateFn判断该task能否调度到node上，不能执行4</li>
+<li>将task分配到该node，执行2</li>
+</ol>
+<p>Backfill直接对task调用Predicate，并将task分配到第一个满足Predicate的节点，并未对task、node进行排序。</p>
+<h3 id="preempt-action">Preempt action</h3>
+<p>当高优先级的task没有资源调度时可以触发抢占调度，将一些低优先级的task进行驱逐。抢占流程：</p>
+<ol>
+<li>遍历所有的queue、job、task，将所有queue加入queues列表(因为只涉及到queue内部的抢占，不需要对queue进行排序)；将有pending状态的task的job加入preemptorsMap，key为queue，value为优先级队列和underRequest列表；将所有pending状态task加入preemptorTasks，key为job，value为优先级队列。队列排序方式与Allocate action相同。</li>
+<li>遍历queues列表：</li>
+</ol>
+<p>job间抢占：</p>
+<ol>
+<li>从该queue的job队列中pop一个job</li>
+<li>从该job的task队列中pop一个task</li>
+<li>尝试抢占同一个queue下不同job的task，如果能抢占成功，将该task设置为pipeline状态，并将该task的pipeline操作以及被抢占task的驱逐操作放入队列</li>
+<li>判断job是否为Pipelined(job中ready的task和pipeline的task达到minavailable)，若是则将所有操作提交执行，并将job加入回job队列(可能剩余task需要抢占，但优先级不高)。否则继续2.2</li>
+<li>若task都pop完后job还不是Pipelined，将之前提交的所有操作都清理，处理下一个job</li>
+</ol>
+<p>job内抢占:</p>
+<ol start="6">
+<li>遍历job underRequest列表，若pending的task不为空，从task队列中pop一个task，尝试抢占同一个job下的task，若能抢占直接将所需操作提交。</li>
+</ol>
+<h3 id="reclaim-action">Reclaim action</h3>
+<p>当新的queue加入时，可能因为资源已经被其他queue的task占用而导致即使queue中资源还未分配完但是task调度失败的情况，为了让该queue中task正常调度，需要通过Reclaim action将部分pod驱逐，Preempt action是queue内部的抢占，Reclaim action是queue之间的抢占。流程：</p>
+<ol>
+<li>遍历所有的queue、job、task，将所有queue加入queues优先级队列；将有pending状态的task的job加入preemptorsMap，key为queue，value为优先级队列；将所有pending状态task加入preemptorTasks，key为job，value为优先级队列。队列排序方式与Allocate action相同。</li>
+<li>从queues优先级队列中pop一个queue，直到queues为空</li>
+<li>判断queue中的资源是否耗尽，是则继续2(Reclaim只针对queue中有资源但是task未调度成功的情况)</li>
+<li>从该queue对应的job队列中pop一个job，若job为空，继续2</li>
+<li>从该job对应的task队列中pop一个task，若task为空，继续2</li>
+<li>通过session的PredicateFn筛选出该task可以调度的节点，遍历节点，遍历后继续2</li>
+<li>通过session的Reclaimable筛选出该节点上可以驱逐的task，若可驱逐task资源满足该task要求，则将可驱逐task驱逐，并将该task加入节点pipeline；否则继续6中遍历节点</li>
+<li>若该task加入节点pipeline，则将queue放回queues队列中，并继续2；否则直接执行2（最高优先级的job和task未抢占成功，则不考虑对该queue中其他task进行抢占）</li>
+</ol>
+<h2 id="plugins">Plugins</h2>
+<p>kube-batch有多个plugin实现，其中gang和drf比较有特点：</p>
+<h3 id="gang">gang</h3>
+<p>gang plugin实现了kube-batch的批调度，gang在session中注册了以下Fn：</p>
+<ul>
+<li>jobValidFN：生成新的session时会对每个job调用jobValidFN，检查该job是否合法，gang中检查该job下所有状态的task是否达到job的minAvailable，若没有则job不合法</li>
+<li>preemptableFn：抢占操作使用，判断task是否能被抢占，task被抢占后job仍然ready则该task可以被抢占</li>
+<li>reclaimableFn：queue之前抢占时使用，判断task是否能被抢占，实现和preemptableFn相同</li>
+<li>jobOrderFn：job优先级排序，在job加入优先级队列时使用，未ready的job优先级比ready的job高</li>
+<li>jobReadyFn：判断job是否ready，job下调度成功的pod和状态正常的task数达到minAvailable则ready</li>
+<li>jobPipelinedFn：判断job是否pipelined，抢占时使用，若抢占后job是pipelined，则将抢占操作提交。job下调度成功、状态正常和pipelined的task数量达到minAvailable则为pipelined</li>
+</ul>
+<h3 id="drf">drf</h3>
+<p>Dominant Resource Fairness (主导资源平衡)，主导资源是指所有资源中job需求最高的资源，drf通过计算job不同资源的share值(job所需资源/集群中该资源总量)来找到主导资源，并将主导资源的share值作为该job的share值，在job排序和抢占时会用到这个share值。drf实现的Fn有：</p>
+<ul>
+<li>preemptableFn：抢占task的job加上抢占task后的share值为LS，被抢占task的job减去被抢占task后的share值为RS。若LS &lt; RS或LS、RS差距在0.000001内则可以抢占。</li>
+<li>jobOrderFn：job优先级排序，share值越小的job优先级越高</li>
+</ul>
+<hr>
+<h1 id="contact-me">Contact Me</h1>
+
+
+
+<form class="black-80 sans-serif" accept-charset="UTF-8" action="https://formspree.io/xaypvadb" method="POST" role="form">
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray"  for="name">Your Name</label>
+    <input type="text" id="name" name="name" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="name"/>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="email">Email Address</label>
+    <input type="email" id="email" name="email" class="w-100 f5 pv3 ph3 bg-light-gray bn"  required placeholder=" "  aria-labelledby="email"/>
+    <div class="requirements f6 gray glow i ph3 overflow-hidden">
+      An email address is required.
+    </div>
+
+    <label class="f6 b db mb1 mt3 sans-serif mid-gray" for="message">Message</label>
+    <textarea id="message" name="message" class="w-100 f5 pv3 ph3 bg-light-gray bn h4" aria-labelledby="message"></textarea>
+
+    <input class="db w-100 mv2 white pa3 bn hover-shadow hover-bg-black bg-animate bg-black" type="submit" value="Send" />
+
+</form><ul class="pa0">
+  
+   <li class="list">
+     <a href="/tags/schedule" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">schedule</a>
+   </li>
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+  <div class="bg-light-gray pa3 nested-list-reset nested-copy-line-height nested-links">
+    <p class="f5 b mb3">Related</p>
+    <ul class="pa0 list">
+	   
+	     <li  class="mb2">
+          <a href="/blogs/tensile-kube/tensile-kube/">Tensile-Kube</a>
+        </li>
+	    
+	     <li  class="mb2">
+          <a href="/blogs/schedulingqueue/scheduling-queue/">Scheduling Queue</a>
+        </li>
+	    
+    </ul>
+</div>
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://lixiang233.github.io" >
+    &copy;  Li Xiang Blogging 2021 
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+<a href="https://github.com/lixiang233" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+  </body>
+</html>
