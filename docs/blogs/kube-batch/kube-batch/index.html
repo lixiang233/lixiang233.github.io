@@ -36,7 +36,7 @@
 <meta itemprop="description" content="简要介绍社区批调度器kube-batch">
 <meta itemprop="datePublished" content="2020-08-12T17:26:17+08:00" />
 <meta itemprop="dateModified" content="2020-08-12T17:26:17+08:00" />
-<meta itemprop="wordCount" content="5368">
+<meta itemprop="wordCount" content="5383">
 
 
 
@@ -188,7 +188,7 @@
       
       
         <span class="f6 mv4 dib tracked"> - 11 minutes read</span>
-        <span class="f6 mv4 dib tracked"> - 5368 words</span>
+        <span class="f6 mv4 dib tracked"> - 5383 words</span>
         
         <span class="f6 mv4 dib tracked"> - <span id="busuanzi_value_page_pv"></span> views</span>
         
@@ -232,10 +232,10 @@
 <p>Kube-batch中有以下概念：</p>
 <ul>
 <li>
-<p>podgroup：CRD，pod组，对应多个Pod，需要配置minAvaliable，并且可以配置priorityclass</p>
+<p>podgroup：CRD，pod组，对应多个Pod，需要配置minAvaliable(用于判断该 podgroup/job 是否ready)，并且可以配置priorityclass(优先级比较)</p>
 </li>
 <li>
-<p>queue：CRD，相当于namespace，每个queue通过权重来分配相应的资源，podgroup可以指定使用的queue。</p>
+<p>queue：CRD，相当于租户，每个queue通过权重来分配集群的资源，podgroup可以指定使用的queue。</p>
 </li>
 <li>
 <p>task：task即一个需要调度的pod，task是调度的单元，pod需要配置podgroup来表示对应的job。一个task在kube-batch中有以下状态：</p>
